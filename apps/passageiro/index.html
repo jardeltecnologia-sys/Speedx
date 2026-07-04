@@ -1,76 +1,138 @@
 <!DOCTYPE html>
-<!-- ============================================================================
-  SPEEDX PASSAGEIRO - Tela principal
-  ============================================================================
-  Este é o app do PASSAGEIRO: mostra o mapa com os motoristas disponíveis
-  se movendo em tempo real (via WebSocket) ao redor da sua localização.
-  O mesmo código roda: no navegador (web) e dentro do APK (Capacitor).
-============================================================================ -->
+<!-- ==========================================================================
+  SPEEDX PASSAGEIRO — v2 (Design System Speedx)
+  Mapa dominante · Top bar flutuante · Bottom sheet · Estados claros
+=========================================================================== -->
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <!-- viewport-fit=cover: o app ocupa a tela inteira, inclusive atrás do notch -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
-  <meta name="theme-color" content="#00E676" />
+  <meta name="theme-color" content="#FFFFFF" />
   <title>Speedx — Passageiro</title>
 
-  <!-- PWA: torna o app INSTALÁVEL direto do navegador (sem loja!) -->
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="icones/icone-192.png" />
   <link rel="apple-touch-icon" href="icones/icone-192.png" />
 
-  <!-- Bibliotecas EMBARCADAS (funcionam dentro do APK sem depender de CDN) -->
   <link rel="stylesheet" href="vendor/leaflet.css" />
+  <link rel="stylesheet" href="css/tokens.css" />
+  <link rel="stylesheet" href="css/components.css" />
   <link rel="stylesheet" href="css/app.css" />
 </head>
 <body>
 
-  <!-- ======================= CABEÇALHO ======================= -->
-  <header class="topo">
-    <div class="logo">
-      <!-- Raio: símbolo da velocidade do Speedx -->
-      <svg viewBox="0 0 24 24" class="logo-raio" aria-hidden="true">
+  <!-- ============================= MAPA ================================= -->
+  <div id="mapa" aria-label="Mapa com motoristas próximos"></div>
+
+  <!-- ========================= TOP BAR FLUTUANTE ======================== -->
+  <header class="topbar">
+    <div class="topbar__brand card">
+      <svg class="brand-bolt" viewBox="0 0 24 24" aria-hidden="true">
         <path d="M13 2 L4 14 h6 l-1 8 9-12 h-6 z" fill="currentColor"/>
       </svg>
-      <span class="logo-nome">Speed<span class="logo-x">x</span></span>
+      <span class="brand-name">Speed<span class="brand-x">x</span></span>
     </div>
-    <button id="btn-config" class="btn-icone" title="Configurar servidor">⚙️</button>
+
+    <div class="topbar__right">
+      <span id="status-pill" class="status-pill status-pill--offline" role="status">
+        <span class="status-pill__dot"></span>
+        <span id="status-texto">Conectando</span>
+      </span>
+      <button id="btn-config" class="icon-btn" aria-label="Configurações do servidor">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.55-1 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h0a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55h0a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v0a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.55 1z"/>
+        </svg>
+      </button>
+    </div>
   </header>
 
-  <!-- ======================= MAPA ======================= -->
-  <div id="mapa"></div>
+  <!-- ========================= BOTTOM SHEET ============================= -->
+  <section class="sheet" aria-label="Solicitar corrida">
+    <div class="sheet__handle" aria-hidden="true"></div>
 
-  <!-- ======================= PAINEL INFERIOR ======================= -->
-  <div class="painel">
-    <div class="painel-linha">
-      <span id="status-conexao" class="bolinha offline" title="Estado da conexão"></span>
-      <span id="texto-status">Conectando ao Speedx...</span>
-    </div>
-    <div class="painel-destaque">
-      <span id="contador-motoristas">0</span>
-      <span class="painel-legenda">motoristas próximos de você</span>
+    <!-- Motoristas por perto -->
+    <div class="perto">
+      <span id="contador-motoristas" class="perto__num">0</span>
+      <span class="perto__label">motoristas por perto</span>
     </div>
 
-    <!-- Área da corrida: a dica orienta o passageiro e o botão pede/cancela -->
-    <p id="dica-corrida" class="dica">Toque no mapa para marcar o seu destino 🎯</p>
-    <button id="btn-corrida" class="btn-gigante escondido">PEDIR CORRIDA</button>
-  </div>
+    <!-- Campo de destino -->
+    <button id="campo-destino" class="search-input" aria-label="Escolher destino no mapa">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>
+      </svg>
+      <span id="destino-texto" class="search-input__placeholder">Para onde vamos?</span>
+    </button>
+    <p id="destino-dica" class="dica-campo">Toque em um ponto do mapa para marcar o destino.</p>
 
-  <!-- ======================= MODAL DE CONFIGURAÇÃO ======================= -->
-  <!-- Permite apontar o app para o servidor certo (VPS, IP local, etc.) -->
-  <div id="modal-config" class="modal escondido">
-    <div class="modal-caixa">
-      <h2>⚙️ Servidor Speedx</h2>
-      <p>Endereço do servidor (ex.: <code>http://192.168.0.10:3000</code> ou <code>https://speedx.seudominio.com</code>)</p>
-      <input id="campo-servidor" type="url" placeholder="http://..." />
-      <div class="modal-botoes">
-        <button id="btn-cancelar" class="btn secundario">Cancelar</button>
-        <button id="btn-salvar" class="btn primario">Salvar e conectar</button>
+    <!-- Opções de corrida -->
+    <div id="opcoes" class="opcoes escondido" role="radiogroup" aria-label="Categoria da corrida">
+      <button class="opcao opcao--ativa" role="radio" aria-checked="true">
+        <span class="opcao__icone" aria-hidden="true">
+          <svg class="icon" viewBox="0 0 24 24">
+            <path d="M5 11 6.5 6.5A2 2 0 0 1 8.4 5h7.2a2 2 0 0 1 1.9 1.5L19 11"/>
+            <path d="M4 11h16a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1h-1"/>
+            <path d="M3 12v4a1 1 0 0 0 1 1h1"/>
+            <circle cx="7.5" cy="17" r="1.8"/><circle cx="16.5" cy="17" r="1.8"/>
+          </svg>
+        </span>
+        <span class="opcao__info">
+          <span class="opcao__nome">Speedx Econômico</span>
+          <span class="opcao__desc">Chega rápido, preço justo</span>
+        </span>
+        <span id="preco-economico" class="opcao__preco">—</span>
+      </button>
+
+      <button class="opcao opcao--desativada" role="radio" aria-checked="false" disabled>
+        <span class="opcao__icone" aria-hidden="true">
+          <svg class="icon" viewBox="0 0 24 24">
+            <path d="M5 11 6.5 6.5A2 2 0 0 1 8.4 5h7.2a2 2 0 0 1 1.9 1.5L19 11"/>
+            <path d="M4 11h16a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1h-1"/>
+            <path d="M3 12v4a1 1 0 0 0 1 1h1"/>
+            <circle cx="7.5" cy="17" r="1.8"/><circle cx="16.5" cy="17" r="1.8"/>
+          </svg>
+        </span>
+        <span class="opcao__info">
+          <span class="opcao__nome">Speedx Comfort</span>
+          <span class="opcao__desc">Em breve</span>
+        </span>
+        <span class="badge">Em breve</span>
+      </button>
+    </div>
+
+    <!-- Estado da corrida (procurando / a caminho / finalizada...) -->
+    <div id="estado-corrida" class="estado escondido" role="status">
+      <div id="estado-icone" class="estado__icone"></div>
+      <div class="estado__info">
+        <p id="estado-titulo" class="estado__titulo"></p>
+        <p id="estado-texto" class="estado__texto"></p>
+      </div>
+    </div>
+
+    <!-- Ação principal -->
+    <button id="btn-corrida" class="btn btn--primary btn--lg btn--block escondido">Pedir corrida</button>
+  </section>
+
+  <!-- ==================== MODAL: SERVIDOR ============================== -->
+  <div id="modal-config" class="modal-backdrop escondido">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-titulo">
+      <h2 id="modal-titulo" class="modal__title">Servidor Speedx</h2>
+      <p class="modal__body">
+        Endereço do servidor da plataforma. Padrão:
+        <strong>https://speedx.titanhost.cloud</strong>
+      </p>
+      <div class="field">
+        <label class="field__label" for="campo-servidor">Endereço</label>
+        <input id="campo-servidor" class="input" type="url" placeholder="https://..." />
+      </div>
+      <div class="modal__actions" style="margin-top: var(--sp-5);">
+        <button id="btn-cancelar" class="btn btn--ghost">Cancelar</button>
+        <button id="btn-salvar" class="btn btn--primary">Salvar e conectar</button>
       </div>
     </div>
   </div>
 
-  <!-- Bibliotecas embarcadas + nosso código -->
   <script src="vendor/leaflet.js"></script>
   <script src="vendor/socket.io.min.js"></script>
   <script src="js/app.js"></script>

@@ -1,246 +1,145 @@
 /* ============================================================================
-   SPEEDX - IDENTIDADE VISUAL (tema escuro + verde vibrante)
-   ============================================================================
-   A cor da marca é o VERDE NEON (#00E676): transmite velocidade, dinheiro
-   e "pode ir" (sinal verde). O fundo escuro dá contraste máximo ao verde
-   e economiza bateria em telas OLED de celular.
+   SPEEDX MOTORISTA — layout do cockpit (consome tokens + componentes)
 ============================================================================ */
 
-:root {
-  --verde: #00E676;          /* Verde vibrante - a cor do Speedx */
-  --verde-escuro: #00B25C;   /* Verde para estados "pressionado" */
-  --fundo: #0B0F0E;          /* Quase preto, com um toque de verde */
-  --painel: #141A18;         /* Cartões e painéis */
-  --texto: #F2F7F4;          /* Texto principal (quase branco) */
-  --texto-suave: #9DB0A6;    /* Texto secundário */
-  --vermelho: #FF5252;       /* Erros e "offline" */
+html, body { height: 100%; overflow: hidden; }
+
+/* ------------------------------- MAPA ------------------------------------ */
+#mapa { position: absolute; inset: 0; z-index: var(--z-map); background: var(--surface-sunken); }
+.leaflet-control-attribution {
+  font-size: 10px; background: var(--glass) !important; color: var(--text-muted) !important;
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
+/* ------------------------------ TOP BAR ---------------------------------- */
+.topbar {
+  position: fixed; z-index: var(--z-topbar);
+  top: calc(var(--sp-3) + env(safe-area-inset-top));
+  left: var(--sp-3); right: var(--sp-3);
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--sp-3); pointer-events: none;
+}
+.topbar > * { pointer-events: auto; }
 
-html, body {
-  height: 100%;
-  font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
-  background: var(--fundo);
-  color: var(--texto);
-  overflow: hidden; /* O app é uma tela única, sem rolagem */
+.topbar__brand {
+  display: flex; align-items: center; gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-4);
+  border-radius: var(--r-full);
+  background: var(--glass); backdrop-filter: blur(10px);
+}
+.brand-bolt { width: 20px; height: 20px; color: var(--accent); }
+.brand-name { font-size: var(--fs-title); font-weight: var(--fw-heavy); letter-spacing: -0.02em; }
+.brand-x { color: var(--primary); }
+.topbar__right { display: flex; align-items: center; gap: var(--sp-2); }
+
+/* --------------------------- COCKPIT (Início) ---------------------------- */
+.painel-cockpit { padding-bottom: calc(84px + env(safe-area-inset-bottom)); }
+
+.metricas {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-2); margin-bottom: var(--sp-4);
+}
+.metrica {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: var(--sp-3) var(--sp-2);
+  background: var(--surface-sunken); border-radius: var(--r-md);
+}
+.metrica__valor { font-size: var(--fs-title); font-weight: var(--fw-bold); }
+.metrica__label { font-size: var(--fs-caption); color: var(--text-muted); }
+
+/* Estado da operação (offline / online / em corrida) */
+.estado {
+  display: flex; align-items: center; gap: var(--sp-4);
+  padding: var(--sp-4); margin-bottom: var(--sp-4);
+  background: var(--surface-sunken); border-radius: var(--r-md);
+}
+.estado--online   { background: var(--success-soft); }
+.estado--corrida  { background: var(--info-soft); }
+.estado--erro     { background: var(--danger-soft); }
+
+.estado__icone { flex: none; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); }
+.estado--online .estado__icone  { color: var(--success); }
+.estado--corrida .estado__icone { color: var(--info); }
+.estado--erro .estado__icone    { color: var(--danger); }
+.estado__icone .icon { width: 26px; height: 26px; }
+
+.estado__titulo { font-size: var(--fs-body); font-weight: var(--fw-bold); }
+.estado__texto  { font-size: var(--fs-body-sm); color: var(--text-secondary); }
+
+/* Botão online quando ATIVO vira ação de sair (vermelho vazado) */
+#btn-online.ligado {
+  background: transparent; color: var(--danger);
+  border: 1.5px solid var(--danger); box-shadow: none;
 }
 
-/* ======================= CABEÇALHO ======================= */
-.topo {
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  z-index: 1000; /* Acima do mapa (Leaflet usa z-index altos) */
+/* ------------------------------ PÁGINAS (abas) --------------------------- */
+.pagina {
+  position: fixed; inset: 0; z-index: var(--z-overlay);
+  background: var(--bg);
+  padding: calc(76px + env(safe-area-inset-top)) var(--sp-4) calc(84px + env(safe-area-inset-bottom));
+  overflow-y: auto;
+}
+.pagina__titulo { font-size: var(--fs-heading-lg); font-weight: var(--fw-bold); margin-bottom: var(--sp-4); }
+
+.cards-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-3); }
+
+.conta-linha { display: flex; justify-content: space-between; align-items: center; gap: var(--sp-3); }
+.conta-linha__label { font-size: var(--fs-body-sm); color: var(--text-muted); }
+.conta-linha__valor { font-size: var(--fs-body-sm); font-weight: var(--fw-semibold); text-align: right; word-break: break-all; }
+
+/* Lista de corridas da sessão */
+.corrida-item {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--sp-3); padding: var(--sp-4);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.corrida-item:last-child { border-bottom: none; }
+.corrida-item__hora { font-size: var(--fs-caption); color: var(--text-muted); }
+.corrida-item__valor { font-weight: var(--fw-bold); color: var(--success); }
+
+/* --------------------------- BOTTOM NAVIGATION --------------------------- */
+.bottom-nav {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: var(--z-topbar);
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  /* safe-area: respeita o notch/câmera dos celulares modernos */
-  padding: calc(10px + env(safe-area-inset-top)) 16px 10px 16px;
-  background: linear-gradient(180deg, rgba(11,15,14,.95), rgba(11,15,14,.75));
-  backdrop-filter: blur(8px);
+  background: var(--surface);
+  border-top: 1px solid var(--border-subtle);
+  padding-bottom: env(safe-area-inset-bottom);
+  box-shadow: 0 -2px 12px rgba(16,22,19,.06);
+}
+.bottom-nav__item {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: var(--sp-2) 0 var(--sp-2);
+  background: none; border: none; cursor: pointer;
+  color: var(--text-muted); font-size: var(--fs-caption); font-weight: var(--fw-medium);
+  transition: color var(--t-base) var(--ease);
+}
+.bottom-nav__item .icon { width: 22px; height: 22px; }
+.bottom-nav__item--ativo { color: var(--primary); }
+
+/* ------------------------- MODAL DO CHAMADO ------------------------------ */
+.modal.chamado { text-align: left; }
+
+.chamado__topo { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--sp-3); }
+.chamado__segundos { font-size: var(--fs-body-sm); font-weight: var(--fw-bold); color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+
+.chamado__valor {
+  font-size: var(--fs-display); font-weight: var(--fw-heavy);
+  color: var(--text); line-height: var(--lh-tight);
+  margin-bottom: var(--sp-4); letter-spacing: -0.02em;
 }
 
-.logo { display: flex; align-items: center; gap: 6px; }
-.logo-raio { width: 26px; height: 26px; color: var(--verde); }
-.logo-nome { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
-.logo-x { color: var(--verde); }
+.chamado__detalhes { display: flex; flex-direction: column; gap: var(--sp-2); margin-bottom: var(--sp-4); }
+.chamado__linha { display: flex; align-items: center; gap: var(--sp-2); font-size: var(--fs-body-sm); color: var(--text-secondary); }
+.chamado__linha .icon--sm { color: var(--primary); }
 
-.btn-icone {
-  background: var(--painel);
-  border: 1px solid rgba(0,230,118,.25);
-  border-radius: 12px;
-  font-size: 18px;
-  padding: 8px 10px;
-  cursor: pointer;
-}
-
-/* ======================= MAPA ======================= */
-#mapa {
-  position: absolute;
-  inset: 0; /* Ocupa a tela INTEIRA; cabeçalho e painel flutuam por cima */
-  background: var(--fundo);
-}
-
-/* Deixa os tiles do OpenStreetMap mais escuros, combinando com o tema */
-.leaflet-tile { filter: brightness(.72) contrast(1.05) saturate(.85); }
-
-/* ======================= MARCADORES ======================= */
-/* O "você está aqui" do passageiro: bolinha verde pulsante */
-.marcador-voce {
-  width: 18px; height: 18px;
-  background: var(--verde);
-  border: 3px solid #fff;
-  border-radius: 50%;
-  box-shadow: 0 0 0 rgba(0,230,118,.5);
-  animation: pulso 2s infinite;
-}
-@keyframes pulso {
-  0%   { box-shadow: 0 0 0 0 rgba(0,230,118,.55); }
-  70%  { box-shadow: 0 0 0 18px rgba(0,230,118,0); }
-  100% { box-shadow: 0 0 0 0 rgba(0,230,118,0); }
-}
-
-/* Carro dos motoristas no mapa */
-.marcador-carro {
-  font-size: 26px;
-  filter: drop-shadow(0 0 6px rgba(0,230,118,.9));
-  transition: transform .3s ease;
-}
-
-/* ======================= PAINEL INFERIOR ======================= */
-.painel {
-  position: fixed;
-  left: 12px; right: 12px;
-  bottom: calc(12px + env(safe-area-inset-bottom));
-  z-index: 1000;
-  background: var(--painel);
-  border: 1px solid rgba(0,230,118,.2);
-  border-radius: 18px;
-  padding: 14px 18px;
-  box-shadow: 0 8px 30px rgba(0,0,0,.5);
-}
-
-.painel-linha {
-  display: flex; align-items: center; gap: 8px;
-  color: var(--texto-suave); font-size: 13px;
-}
-
-/* Bolinha de status: verde = conectado, vermelha = fora do ar */
-.bolinha { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
-.bolinha.online  { background: var(--verde); box-shadow: 0 0 8px var(--verde); }
-.bolinha.offline { background: var(--vermelho); }
-
-.painel-destaque { margin-top: 6px; display: flex; align-items: baseline; gap: 8px; }
-#contador-motoristas { font-size: 34px; font-weight: 800; color: var(--verde); }
-.painel-legenda { color: var(--texto-suave); font-size: 14px; }
-
-/* ======================= MODAL DE CONFIGURAÇÃO ======================= */
-.modal {
-  position: fixed; inset: 0; z-index: 2000;
-  background: rgba(0,0,0,.7);
-  display: flex; align-items: center; justify-content: center;
-  padding: 20px;
-}
-.modal.escondido { display: none; }
-
-.modal-caixa {
-  background: var(--painel);
-  border: 1px solid rgba(0,230,118,.3);
-  border-radius: 18px;
-  padding: 22px;
-  width: 100%; max-width: 420px;
-}
-.modal-caixa h2 { font-size: 18px; margin-bottom: 8px; }
-.modal-caixa p  { color: var(--texto-suave); font-size: 13px; margin-bottom: 14px; }
-.modal-caixa code { color: var(--verde); }
-
-#campo-servidor {
-  width: 100%;
-  background: var(--fundo);
-  border: 1px solid rgba(0,230,118,.3);
-  border-radius: 12px;
-  color: var(--texto);
-  padding: 12px 14px;
-  font-size: 15px;
-  margin-bottom: 16px;
-}
-
-.modal-botoes { display: flex; gap: 10px; justify-content: flex-end; }
-
-.btn {
-  border: none; border-radius: 12px;
-  padding: 12px 18px;
-  font-size: 15px; font-weight: 700;
-  cursor: pointer;
-}
-.btn.primario  { background: var(--verde); color: #05130C; }
-.btn.primario:active { background: var(--verde-escuro); }
-.btn.secundario { background: transparent; color: var(--texto-suave); border: 1px solid rgba(255,255,255,.15); }
-
-/* ============================================================================
-   ESTILOS EXCLUSIVOS DO APP DO MOTORISTA
-============================================================================ */
-
-/* Selo "MOTORISTA" ao lado do logo */
-.etiqueta-motorista {
-  background: var(--verde);
-  color: #05130C;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 1px;
-  padding: 3px 8px;
-  border-radius: 999px;
-  margin-left: 6px;
-}
-
-/* O grande botão de trabalho: verde quando pode ficar online,
-   vermelho-borda quando já está online (ação = sair) */
-.btn-gigante {
-  width: 100%;
-  margin-top: 12px;
-  padding: 18px;
-  border: none;
-  border-radius: 16px;
-  font-size: 18px;
-  font-weight: 800;
-  letter-spacing: 1px;
-  cursor: pointer;
-  background: var(--verde);
-  color: #05130C;
-  box-shadow: 0 6px 24px rgba(0,230,118,.35);
-  transition: all .2s ease;
-}
-.btn-gigante:active { transform: scale(.98); }
-
-.btn-gigante.ligado {
-  background: transparent;
-  color: var(--vermelho);
-  border: 2px solid var(--vermelho);
-  box-shadow: none;
-}
-
-/* ============================================================================
-   O CHAMADO DE CORRIDA (app do motorista)
-============================================================================ */
-
-/* Classe utilitária: esconde qualquer elemento */
-.escondido { display: none !important; }
-
-/* Marcadores de emoji no mapa (passageiro 🧍, destino 🎯) */
-.marcador-emoji {
-  font-size: 26px;
-  filter: drop-shadow(0 0 6px rgba(0,230,118,.9));
-}
-
-/* Caixa do chamado: chamativa, é dinheiro entrando! */
-.modal-caixa.chamado { text-align: center; border-color: var(--verde); }
-
-.chamado-valor {
-  font-size: 44px;
-  font-weight: 900;
-  color: var(--verde);
-  margin: 6px 0;
-  text-shadow: 0 0 24px rgba(0,230,118,.4);
-}
-
-/* Barra de tempo do chamado (a largura é controlada pelo JavaScript) */
 .chamado-tempo {
-  height: 8px;
-  background: rgba(255,255,255,.08);
-  border-radius: 999px;
-  overflow: hidden;
-  margin: 14px 0 18px 0;
+  height: 6px; background: var(--surface-sunken);
+  border-radius: var(--r-full); overflow: hidden; margin-bottom: var(--sp-5);
 }
 #chamado-barra {
-  height: 100%;
-  width: 100%;
-  background: var(--verde);
-  border-radius: 999px;
+  height: 100%; width: 100%;
+  background: var(--primary); border-radius: var(--r-full);
   transition: width 1s linear;
 }
 
-.chamado-botoes { justify-content: space-between; }
-.chamado-botoes .btn { flex: 1; padding: 16px; font-size: 16px; }
-
-/* Botão de finalizar corrida */
-.btn-gigante.finalizar { background: var(--verde); }
+.chamado__acoes { display: flex; gap: var(--sp-3); }
+.chamado__acoes .btn { flex: 1; }

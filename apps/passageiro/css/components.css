@@ -1,0 +1,272 @@
+/* ============================================================================
+   SPEEDX DESIGN SYSTEM — COMPONENTES (v1)
+   ============================================================================
+   Botões, cards, inputs, pills, sheets, modais, skeletons, empty states.
+   Todos consomem exclusivamente os tokens de tokens.css.
+============================================================================ */
+
+/* ================================ BOTÕES ================================== */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: var(--sp-2);
+  min-height: 48px;                 /* área de toque confortável */
+  padding: 0 var(--sp-5);
+  border: none; border-radius: var(--r-md);
+  font-size: var(--fs-body); font-weight: var(--fw-semibold);
+  cursor: pointer; text-decoration: none; white-space: nowrap;
+  transition: background var(--t-base) var(--ease),
+              transform var(--t-fast) var(--ease),
+              box-shadow var(--t-base) var(--ease);
+  user-select: none;
+}
+.btn:active { transform: scale(0.98); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+.btn--primary  { background: var(--primary); color: var(--text-on-primary); box-shadow: var(--shadow-sm); }
+.btn--primary:hover  { background: var(--primary-hover); }
+.btn--primary:active { background: var(--primary-active); }
+
+.btn--secondary { background: var(--surface); color: var(--text); border: 1px solid var(--border-strong); }
+.btn--secondary:hover { border-color: var(--text-muted); background: var(--surface-sunken); }
+
+.btn--ghost { background: transparent; color: var(--text-secondary); }
+.btn--ghost:hover { background: var(--surface-sunken); color: var(--text); }
+
+.btn--danger { background: transparent; color: var(--danger); border: 1.5px solid var(--danger); }
+.btn--danger:hover { background: var(--danger-soft); }
+
+.btn--soft { background: var(--primary-soft); color: var(--primary); }
+.btn--soft:hover { background: var(--primary-soft-2); }
+
+.btn--lg   { min-height: 56px; font-size: var(--fs-body-lg); border-radius: var(--r-lg); padding: 0 var(--sp-6); }
+.btn--sm   { min-height: 38px; font-size: var(--fs-body-sm); padding: 0 var(--sp-4); }
+.btn--block{ width: 100%; }
+
+.btn .icon { width: 20px; height: 20px; flex: none; }
+
+/* Botão de ícone (sempre com aria-label no HTML) */
+.icon-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 44px; height: 44px;
+  border: 1px solid var(--border-subtle); border-radius: var(--r-md);
+  background: var(--surface); color: var(--text-secondary);
+  cursor: pointer; box-shadow: var(--shadow-sm);
+  transition: background var(--t-base) var(--ease), color var(--t-base) var(--ease);
+}
+.icon-btn:hover { background: var(--surface-sunken); color: var(--text); }
+.icon-btn .icon { width: 20px; height: 20px; }
+
+/* ================================ ÍCONES ================================== */
+.icon { width: 24px; height: 24px; stroke: currentColor; fill: none;
+        stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.icon--sm { width: 16px; height: 16px; }
+.icon--lg { width: 32px; height: 32px; }
+
+/* ================================ CARDS =================================== */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-sm);
+}
+.card--elevated { box-shadow: var(--shadow-md); border-color: transparent; }
+.card--pad      { padding: var(--sp-5); }
+
+.stat-card { padding: var(--sp-4) var(--sp-5); display: flex; flex-direction: column; gap: var(--sp-1); }
+.stat-card__label { font-size: var(--fs-label); font-weight: var(--fw-medium); color: var(--text-muted); }
+.stat-card__value { font-size: var(--fs-heading-lg); font-weight: var(--fw-bold); color: var(--text); line-height: var(--lh-tight); }
+.stat-card__hint  { font-size: var(--fs-caption); color: var(--text-muted); }
+
+/* ================================ INPUTS ================================== */
+.field { display: flex; flex-direction: column; gap: var(--sp-2); }
+.field__label { font-size: var(--fs-label); font-weight: var(--fw-semibold); color: var(--text-secondary); }
+
+.input {
+  width: 100%; min-height: 48px;
+  padding: 0 var(--sp-4);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-md);
+  font-size: var(--fs-body); color: var(--text);
+  transition: border-color var(--t-base) var(--ease), box-shadow var(--t-base) var(--ease);
+}
+.input::placeholder { color: var(--text-muted); }
+.input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-soft-2); }
+
+/* Campo de busca estilo "Para onde vamos?" */
+.search-input {
+  display: flex; align-items: center; gap: var(--sp-3);
+  min-height: 52px; padding: 0 var(--sp-4);
+  background: var(--surface-sunken);
+  border: 1px solid transparent; border-radius: var(--r-md);
+  color: var(--text); font-size: var(--fs-body-lg); font-weight: var(--fw-medium);
+  cursor: pointer; width: 100%; text-align: left;
+  transition: background var(--t-base) var(--ease), border-color var(--t-base) var(--ease);
+}
+.search-input:hover { background: var(--surface); border-color: var(--border-strong); }
+.search-input .icon { color: var(--text-secondary); }
+.search-input__placeholder { color: var(--text-muted); font-weight: var(--fw-regular); }
+
+/* ============================ BADGES / PILLS ============================== */
+.badge {
+  display: inline-flex; align-items: center; gap: var(--sp-1);
+  padding: 2px var(--sp-3); border-radius: var(--r-full);
+  font-size: var(--fs-caption); font-weight: var(--fw-semibold);
+  background: var(--surface-sunken); color: var(--text-secondary);
+}
+.badge--success { background: var(--success-soft); color: var(--success); }
+.badge--info    { background: var(--info-soft);    color: var(--info); }
+.badge--warning { background: var(--warning-soft); color: var(--warning); }
+.badge--danger  { background: var(--danger-soft);  color: var(--danger); }
+
+.status-pill {
+  display: inline-flex; align-items: center; gap: var(--sp-2);
+  padding: var(--sp-1) var(--sp-3); border-radius: var(--r-full);
+  font-size: var(--fs-label); font-weight: var(--fw-semibold);
+  background: var(--glass); backdrop-filter: blur(10px);
+  border: 1px solid var(--border-subtle); box-shadow: var(--shadow-sm);
+  color: var(--text-secondary);
+}
+.status-pill__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-muted); flex: none; }
+.status-pill--online  .status-pill__dot { background: var(--success); box-shadow: 0 0 0 3px var(--success-soft); }
+.status-pill--online  { color: var(--success); }
+.status-pill--offline .status-pill__dot { background: var(--danger); }
+.status-pill--busy    .status-pill__dot { background: var(--warning); }
+
+/* ============================ BOTTOM SHEET ================================ */
+.sheet {
+  position: fixed; left: 0; right: 0; bottom: 0;
+  z-index: var(--z-sheet);
+  background: var(--surface);
+  border-radius: var(--r-xl) var(--r-xl) 0 0;
+  box-shadow: var(--shadow-floating);
+  padding: var(--sp-3) var(--sp-5) calc(var(--sp-5) + env(safe-area-inset-bottom));
+  max-height: 72vh; overflow-y: auto;
+  animation: sheet-in var(--t-slow) var(--ease);
+}
+@keyframes sheet-in { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+.sheet__handle {
+  width: 40px; height: 4px; border-radius: var(--r-full);
+  background: var(--border-strong); margin: 0 auto var(--sp-4);
+}
+
+/* Em telas largas, o sheet vira um painel flutuante lateral */
+@media (min-width: 768px) {
+  .sheet {
+    left: var(--sp-6); right: auto; bottom: var(--sp-6);
+    width: 400px; border-radius: var(--r-xl);
+  }
+}
+
+/* ================================ MODAL =================================== */
+.modal-backdrop {
+  position: fixed; inset: 0; z-index: var(--z-modal);
+  background: var(--map-overlay);
+  display: flex; align-items: center; justify-content: center;
+  padding: var(--sp-5);
+  animation: fade-in var(--t-base) var(--ease);
+}
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+.modal {
+  width: 100%; max-width: 420px;
+  background: var(--surface);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-floating);
+  padding: var(--sp-6);
+  animation: modal-in var(--t-slow) var(--ease);
+}
+@keyframes modal-in { from { transform: translateY(16px) scale(.98); opacity: 0; } to { transform: none; opacity: 1; } }
+
+.modal__title { font-size: var(--fs-heading-md); font-weight: var(--fw-bold); margin-bottom: var(--sp-2); }
+.modal__body  { color: var(--text-secondary); font-size: var(--fs-body-sm); margin-bottom: var(--sp-5); }
+.modal__actions { display: flex; gap: var(--sp-3); justify-content: flex-end; }
+
+/* ================================ TOAST =================================== */
+.toast-region { position: fixed; top: calc(var(--sp-4) + env(safe-area-inset-top)); left: 50%;
+  transform: translateX(-50%); z-index: var(--z-toast);
+  display: flex; flex-direction: column; gap: var(--sp-2); width: min(92vw, 400px); pointer-events: none; }
+.toast {
+  display: flex; align-items: center; gap: var(--sp-3);
+  background: var(--text); color: var(--bg);
+  padding: var(--sp-3) var(--sp-4); border-radius: var(--r-md);
+  box-shadow: var(--shadow-lg); font-size: var(--fs-body-sm); font-weight: var(--fw-medium);
+  animation: toast-in var(--t-slow) var(--ease);
+}
+@keyframes toast-in { from { transform: translateY(-12px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* ============================== SKELETON ================================== */
+.skeleton {
+  border-radius: var(--r-sm);
+  background: linear-gradient(90deg, var(--surface-sunken) 25%, var(--border-subtle) 50%, var(--surface-sunken) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+@keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+
+/* ============================= EMPTY STATE ================================ */
+.empty-state {
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  gap: var(--sp-3); padding: var(--sp-10) var(--sp-6); color: var(--text-muted);
+}
+.empty-state .icon { width: 40px; height: 40px; color: var(--border-strong); }
+.empty-state__title { font-size: var(--fs-title); font-weight: var(--fw-semibold); color: var(--text-secondary); }
+.empty-state__text  { font-size: var(--fs-body-sm); max-width: 340px; }
+
+/* ============================== SPINNER =================================== */
+.spinner {
+  width: 22px; height: 22px; flex: none;
+  border: 3px solid var(--primary-soft-2);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ============================== DIVISOR =================================== */
+.divider { height: 1px; background: var(--border-subtle); border: none; margin: var(--sp-4) 0; }
+
+/* ============================ TABELA SIMPLES ============================== */
+.data-table { width: 100%; border-collapse: collapse; font-size: var(--fs-body-sm); }
+.data-table th {
+  text-align: left; padding: var(--sp-3) var(--sp-4);
+  font-size: var(--fs-label); font-weight: var(--fw-semibold); color: var(--text-muted);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.data-table td { padding: var(--sp-3) var(--sp-4); border-bottom: 1px solid var(--border-subtle); color: var(--text-secondary); }
+.data-table tr:last-child td { border-bottom: none; }
+
+/* ========================= MARCADORES DE MAPA ============================ */
+/* Ponto "você está aqui": núcleo sólido + pulso suave */
+.map-dot { position: relative; width: 18px; height: 18px; }
+.map-dot::before {
+  content: ""; position: absolute; inset: -7px; border-radius: 50%;
+  background: var(--primary); opacity: .25; animation: dot-pulse 2s var(--ease) infinite;
+}
+.map-dot::after {
+  content: ""; position: absolute; inset: 0; border-radius: 50%;
+  background: var(--primary); border: 3px solid #fff; box-shadow: var(--shadow-md);
+}
+@keyframes dot-pulse { 0% { transform: scale(.6); opacity: .35; } 70% { transform: scale(1.6); opacity: 0; } 100% { opacity: 0; } }
+
+/* Carro (motorista) no mapa: disco branco + glifo verde */
+.map-car {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: #fff; border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-lg);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--primary);
+  transition: transform var(--t-slow) var(--ease);
+}
+.map-car svg { width: 20px; height: 20px; }
+
+/* Pino de destino */
+.map-pin { width: 34px; height: 34px; color: var(--text); filter: drop-shadow(0 2px 4px rgba(16,22,19,.35)); }
+
+/* ============================ UTILITÁRIOS ================================= */
+.escondido { display: none !important; }
+.visually-hidden {
+  position: absolute !important; width: 1px; height: 1px;
+  clip: rect(0 0 0 0); clip-path: inset(50%); overflow: hidden; white-space: nowrap;
+}

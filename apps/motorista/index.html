@@ -1,82 +1,204 @@
 <!DOCTYPE html>
-<!-- ============================================================================
-  SPEEDX MOTORISTA - Tela principal
-  ============================================================================
-  Este é o app do MOTORISTA: um grande botão para ficar ONLINE/OFFLINE.
-  Enquanto online, o GPS do celular envia a posição ao servidor a cada
-  poucos segundos — e o carro aparece no mapa de todos os passageiros.
-============================================================================ -->
+<!-- ==========================================================================
+  SPEEDX MOTORISTA — v2 (Design System Speedx)
+  Cockpit profissional · Painel de ganhos reais · Bottom nav · Chamado premium
+=========================================================================== -->
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
-  <meta name="theme-color" content="#00E676" />
+  <meta name="theme-color" content="#FFFFFF" />
   <title>Speedx — Motorista</title>
 
-  <!-- PWA: torna o app INSTALÁVEL direto do navegador (sem loja!) -->
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="icones/icone-192.png" />
   <link rel="apple-touch-icon" href="icones/icone-192.png" />
 
   <link rel="stylesheet" href="vendor/leaflet.css" />
+  <link rel="stylesheet" href="css/tokens.css" />
+  <link rel="stylesheet" href="css/components.css" />
   <link rel="stylesheet" href="css/app.css" />
 </head>
 <body>
 
-  <!-- ======================= CABEÇALHO ======================= -->
-  <header class="topo">
-    <div class="logo">
-      <svg viewBox="0 0 24 24" class="logo-raio" aria-hidden="true">
+  <!-- ============================= MAPA ================================= -->
+  <div id="mapa" aria-label="Mapa da operação"></div>
+
+  <!-- ========================= TOP BAR FLUTUANTE ======================== -->
+  <header class="topbar">
+    <div class="topbar__brand card">
+      <svg class="brand-bolt" viewBox="0 0 24 24" aria-hidden="true">
         <path d="M13 2 L4 14 h6 l-1 8 9-12 h-6 z" fill="currentColor"/>
       </svg>
-      <span class="logo-nome">Speed<span class="logo-x">x</span></span>
-      <span class="etiqueta-motorista">MOTORISTA</span>
+      <span class="brand-name">Speed<span class="brand-x">x</span></span>
+      <span class="badge badge--success" style="margin-left:2px;">Motorista</span>
     </div>
-    <button id="btn-config" class="btn-icone" title="Configurar servidor">⚙️</button>
+
+    <div class="topbar__right">
+      <span id="status-pill" class="status-pill status-pill--offline" role="status">
+        <span class="status-pill__dot"></span>
+        <span id="status-texto">Offline</span>
+      </span>
+      <button id="btn-config" class="icon-btn" aria-label="Configurações do servidor">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.55-1 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h0a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55h0a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v0a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.55 1z"/>
+        </svg>
+      </button>
+    </div>
   </header>
 
-  <!-- ======================= MAPA ======================= -->
-  <div id="mapa"></div>
+  <!-- ============================ ABA: INÍCIO =========================== -->
+  <section id="tab-inicio" class="painel-cockpit sheet" aria-label="Central do motorista">
+    <div class="sheet__handle" aria-hidden="true"></div>
 
-  <!-- ======================= PAINEL INFERIOR ======================= -->
-  <div class="painel">
-    <div class="painel-linha">
-      <span id="status-conexao" class="bolinha offline"></span>
-      <span id="texto-status">Você está offline</span>
+    <!-- Métricas do dia (dados reais da sessão) -->
+    <div class="metricas">
+      <div class="metrica">
+        <span class="metrica__valor" id="m-ganhos">R$ 0,00</span>
+        <span class="metrica__label">Ganhos hoje</span>
+      </div>
+      <div class="metrica">
+        <span class="metrica__valor" id="m-corridas">0</span>
+        <span class="metrica__label">Corridas</span>
+      </div>
+      <div class="metrica">
+        <span class="metrica__valor" id="m-tempo">00:00</span>
+        <span class="metrica__label">Tempo online</span>
+      </div>
     </div>
 
-    <!-- O BOTÃO: coração do app do motorista -->
-    <button id="btn-online" class="btn-gigante">FICAR ONLINE</button>
+    <!-- Estado atual da operação -->
+    <div id="estado-operacao" class="estado" role="status">
+      <div id="estado-icone" class="estado__icone">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+      </div>
+      <div class="estado__info">
+        <p id="estado-titulo" class="estado__titulo">Você está offline</p>
+        <p id="estado-texto" class="estado__texto">Fique online para receber chamados de corrida.</p>
+      </div>
+    </div>
 
-    <!-- Aparece somente durante uma corrida aceita -->
-    <button id="btn-finalizar" class="btn-gigante finalizar escondido">FINALIZAR CORRIDA 🏁</button>
-  </div>
+    <!-- Ação principal -->
+    <button id="btn-online" class="btn btn--primary btn--lg btn--block">Ficar online</button>
+    <button id="btn-finalizar" class="btn btn--primary btn--lg btn--block escondido">Finalizar corrida</button>
+  </section>
 
-  <!-- ======================= MODAL DO CHAMADO ======================= -->
-  <!-- O coração do negócio: cai na tela quando um passageiro pede corrida -->
-  <div id="modal-chamado" class="modal escondido">
-    <div class="modal-caixa chamado">
-      <h2>🚕 NOVA CORRIDA!</h2>
-      <div id="chamado-valor" class="chamado-valor">R$ 0,00</div>
-      <p id="chamado-detalhes">—</p>
-      <!-- Barra do tempo: encolhe até o chamado expirar -->
+  <!-- ============================ ABA: GANHOS =========================== -->
+  <section id="tab-ganhos" class="pagina escondido" aria-label="Ganhos">
+    <h1 class="pagina__titulo">Ganhos</h1>
+    <div class="cards-grid">
+      <div class="card stat-card">
+        <span class="stat-card__label">Hoje (nesta sessão)</span>
+        <span class="stat-card__value" id="g-hoje">R$ 0,00</span>
+        <span class="stat-card__hint">Somatório real das corridas finalizadas</span>
+      </div>
+      <div class="card stat-card">
+        <span class="stat-card__label">Corridas finalizadas</span>
+        <span class="stat-card__value" id="g-corridas">0</span>
+        <span class="stat-card__hint">Contagem real do dia</span>
+      </div>
+    </div>
+    <div class="card empty-state" style="margin-top: var(--sp-4);">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h4"/></svg>
+      <p class="empty-state__title">Extrato completo em breve</p>
+      <p class="empty-state__text">O histórico permanente com repasse via Pix chega com a carteira do motorista (Fase 4 do projeto).</p>
+    </div>
+  </section>
+
+  <!-- =========================== ABA: CORRIDAS ========================== -->
+  <section id="tab-corridas" class="pagina escondido" aria-label="Corridas">
+    <h1 class="pagina__titulo">Corridas</h1>
+    <div id="lista-corridas" class="card"></div>
+  </section>
+
+  <!-- ============================ ABA: CONTA ============================ -->
+  <section id="tab-conta" class="pagina escondido" aria-label="Conta">
+    <h1 class="pagina__titulo">Conta</h1>
+    <div class="card card--pad">
+      <div class="conta-linha">
+        <span class="conta-linha__label">Identificador do aparelho</span>
+        <span class="conta-linha__valor" id="conta-id">—</span>
+      </div>
+      <hr class="divider" />
+      <div class="conta-linha">
+        <span class="conta-linha__label">Servidor</span>
+        <span class="conta-linha__valor" id="conta-servidor">—</span>
+      </div>
+      <hr class="divider" />
+      <div class="conta-linha">
+        <span class="conta-linha__label">Versão</span>
+        <span class="conta-linha__valor">2.0 · Design System v1</span>
+      </div>
+    </div>
+    <div class="card empty-state" style="margin-top: var(--sp-4);">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/></svg>
+      <p class="empty-state__title">Conta com login em breve</p>
+      <p class="empty-state__text">Cadastro com telefone, documentos e perfil verificado chegam na Fase 3.</p>
+    </div>
+  </section>
+
+  <!-- ========================= BOTTOM NAVIGATION ======================== -->
+  <nav class="bottom-nav" aria-label="Navegação principal">
+    <button class="bottom-nav__item bottom-nav__item--ativo" data-tab="inicio" aria-label="Início">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>
+      <span>Início</span>
+    </button>
+    <button class="bottom-nav__item" data-tab="ganhos" aria-label="Ganhos">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M3 10h18"/><circle cx="12" cy="15" r="2"/></svg>
+      <span>Ganhos</span>
+    </button>
+    <button class="bottom-nav__item" data-tab="corridas" aria-label="Corridas">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg>
+      <span>Corridas</span>
+    </button>
+    <button class="bottom-nav__item" data-tab="conta" aria-label="Conta">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/></svg>
+      <span>Conta</span>
+    </button>
+  </nav>
+
+  <!-- ======================= MODAL: NOVO CHAMADO ======================== -->
+  <div id="modal-chamado" class="modal-backdrop escondido">
+    <div class="modal chamado" role="dialog" aria-modal="true" aria-labelledby="chamado-titulo">
+      <div class="chamado__topo">
+        <span class="badge badge--success">Novo chamado</span>
+        <span id="chamado-tempo-num" class="chamado__segundos">20s</span>
+      </div>
+      <p id="chamado-titulo" class="chamado__valor">R$ 0,00</p>
+      <div class="chamado__detalhes">
+        <div class="chamado__linha">
+          <svg class="icon icon--sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/></svg>
+          <span id="chamado-origem">—</span>
+        </div>
+        <div class="chamado__linha">
+          <svg class="icon icon--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+          <span id="chamado-viagem">—</span>
+        </div>
+      </div>
       <div class="chamado-tempo"><div id="chamado-barra"></div></div>
-      <div class="modal-botoes chamado-botoes">
-        <button id="btn-recusar" class="btn secundario">RECUSAR</button>
-        <button id="btn-aceitar" class="btn primario">ACEITAR ✔</button>
+      <div class="modal__actions chamado__acoes">
+        <button id="btn-recusar" class="btn btn--secondary">Recusar</button>
+        <button id="btn-aceitar" class="btn btn--primary">Aceitar corrida</button>
       </div>
     </div>
   </div>
 
-  <!-- ======================= MODAL DE CONFIGURAÇÃO ======================= -->
-  <div id="modal-config" class="modal escondido">
-    <div class="modal-caixa">
-      <h2>⚙️ Servidor Speedx</h2>
-      <p>Endereço do servidor (ex.: <code>http://192.168.0.10:3000</code> ou <code>https://speedx.seudominio.com</code>)</p>
-      <input id="campo-servidor" type="url" placeholder="http://..." />
-      <div class="modal-botoes">
-        <button id="btn-cancelar" class="btn secundario">Cancelar</button>
-        <button id="btn-salvar" class="btn primario">Salvar</button>
+  <!-- ==================== MODAL: SERVIDOR ============================== -->
+  <div id="modal-config" class="modal-backdrop escondido">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-titulo">
+      <h2 id="modal-titulo" class="modal__title">Servidor Speedx</h2>
+      <p class="modal__body">
+        Endereço do servidor da plataforma. Padrão:
+        <strong>https://speedx.titanhost.cloud</strong>
+      </p>
+      <div class="field">
+        <label class="field__label" for="campo-servidor">Endereço</label>
+        <input id="campo-servidor" class="input" type="url" placeholder="https://..." />
+      </div>
+      <div class="modal__actions" style="margin-top: var(--sp-5);">
+        <button id="btn-cancelar" class="btn btn--ghost">Cancelar</button>
+        <button id="btn-salvar" class="btn btn--primary">Salvar</button>
       </div>
     </div>
   </div>

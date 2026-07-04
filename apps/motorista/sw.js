@@ -6,11 +6,13 @@
 // sw.js do app do passageiro.
 // =============================================================================
 
-const CACHE = 'speedx-motorista-v1';
+const CACHE = 'speedx-motorista-v2';
 
 const ARQUIVOS_DO_APP = [
   './',
   'index.html',
+  'css/tokens.css',
+  'css/components.css',
   'css/app.css',
   'js/app.js',
   'vendor/leaflet.js',

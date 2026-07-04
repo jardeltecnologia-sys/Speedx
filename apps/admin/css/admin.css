@@ -1,0 +1,93 @@
+/* ============================================================================
+   SPEEDX ADMIN — layout SaaS (consome tokens + componentes)
+============================================================================ */
+
+html, body { height: 100%; }
+body { overflow: hidden; }
+
+.admin-shell { display: flex; height: 100vh; }
+
+/* ------------------------------- SIDEBAR --------------------------------- */
+.sidebar {
+  width: 248px; flex: none;
+  display: flex; flex-direction: column;
+  background: var(--surface);
+  border-right: 1px solid var(--border-subtle);
+  padding: var(--sp-5) var(--sp-3);
+}
+
+.sidebar__brand {
+  display: flex; align-items: center; gap: var(--sp-2);
+  padding: 0 var(--sp-3) var(--sp-5);
+  text-decoration: none; color: var(--text);
+  font-size: var(--fs-title); font-weight: var(--fw-heavy);
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: var(--sp-4);
+}
+.sidebar__brand .brand__bolt { width: 22px; height: 22px; color: var(--accent); }
+.sidebar__x { color: var(--primary); }
+.sidebar__brand small { font-size: var(--fs-caption); font-weight: var(--fw-medium); color: var(--text-muted); }
+
+.sidebar__nav { display: flex; flex-direction: column; gap: 2px; flex: 1; overflow-y: auto; }
+
+.sidebar__item {
+  display: flex; align-items: center; gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-3);
+  border: none; background: none; cursor: pointer;
+  border-radius: var(--r-sm);
+  font-size: var(--fs-body-sm); font-weight: var(--fw-medium);
+  color: var(--text-secondary); text-align: left;
+  transition: background var(--t-base) var(--ease), color var(--t-base) var(--ease);
+}
+.sidebar__item .icon { width: 18px; height: 18px; }
+.sidebar__item:hover { background: var(--surface-sunken); color: var(--text); }
+.sidebar__item--ativo { background: var(--primary-soft); color: var(--primary); font-weight: var(--fw-semibold); }
+
+.sidebar__base { padding: var(--sp-4) var(--sp-3) 0; border-top: 1px solid var(--border-subtle); }
+
+/* ------------------------------- CONTEÚDO -------------------------------- */
+.conteudo { flex: 1; overflow-y: auto; padding: var(--sp-8); background: var(--bg); }
+
+.area__cabeca {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: var(--sp-4); margin-bottom: var(--sp-6);
+}
+.area__cabeca h1 { font-size: var(--fs-heading-lg); font-weight: var(--fw-bold); letter-spacing: -0.01em; }
+.area__sub { font-size: var(--fs-body-sm); color: var(--text-muted); margin-top: 2px; }
+
+.metric-grid {
+  display: grid; gap: var(--sp-4);
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  margin-bottom: var(--sp-6);
+}
+
+.paineis-grid { display: grid; gap: var(--sp-4); grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+
+.painel__titulo { font-size: var(--fs-body); font-weight: var(--fw-bold); margin-bottom: var(--sp-4); }
+.painel__nota { font-size: var(--fs-caption); color: var(--text-muted); margin-top: var(--sp-3); }
+
+.saude { display: flex; flex-direction: column; gap: var(--sp-3); }
+.saude__item {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: var(--fs-body-sm); color: var(--text-secondary);
+}
+
+/* ------------------------------ RESPONSIVO ------------------------------- */
+@media (max-width: 900px) {
+  .admin-shell { flex-direction: column; }
+  body { overflow: auto; }
+
+  .sidebar {
+    width: 100%; flex-direction: row; align-items: center;
+    padding: var(--sp-2) var(--sp-3);
+    border-right: none; border-bottom: 1px solid var(--border-subtle);
+    overflow-x: auto;
+  }
+  .sidebar__brand { border: none; margin: 0; padding: 0 var(--sp-3) 0 0; white-space: nowrap; }
+  .sidebar__nav { flex-direction: row; gap: var(--sp-1); }
+  .sidebar__item { white-space: nowrap; padding: var(--sp-2) var(--sp-3); }
+  .sidebar__item span, .sidebar__item { font-size: var(--fs-caption); }
+  .sidebar__base { display: none; }
+
+  .conteudo { padding: var(--sp-4); }
+}
