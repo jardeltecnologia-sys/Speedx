@@ -172,19 +172,49 @@ Legenda: ✅ pronto | 🎯 essencial p/ lançar | ⭐ diferencial competitivo
 - **Disputas e suporte**: tickets, reembolsos, central de incidentes
 - **Métricas**: corridas/dia, tempo médio de espera, taxa de aceitação, avaliações
 
-## 6. ROTEIRO OFICIAL DE FASES
+## 6. ROTEIRO OFICIAL DE FASES (corte estratégico definido em 04/07/2026)
 
-| Fase | Entrega | Resultado para o usuário |
-|------|---------|--------------------------|
-| ✅ 1 | Backend tempo real + geobusca | O mapa vivo |
-| ✅ Apps | PWA + APKs + página institucional + chamado v1 | Dá para pedir e aceitar corrida |
-| **2** | **VPS no ar** (Docker+Nginx+HTTPS+domínio) + **login OTP/JWT** | O mundo inteiro acessa; cada um tem conta |
-| 3 | Corrida persistente (PostgreSQL) + estados completos (cheguei/iniciar) + histórico + foto/placa/nota + busca de endereço | Experiência de corrida completa |
-| 4 | Pix + carteira do motorista + ledger + tarifas por cidade + comissão | O dinheiro circula |
-| 5 | FCM push + GPS em segundo plano (APK motorista) + avaliações + Painel Admin v1 (KYC + mapa da frota) | Profissional de verdade |
-| 6 | OSRM (rotas/ETA reais) + segurança (compartilhar viagem, PIN, RideCheck, emergência) | Paridade de segurança com Uber/99 |
-| 7 | Surge por zona + heatmap + quests + modo destino + cupons/indicação | Paridade de mercado |
-| 8 | Suporte/tickets + LGPD + relatórios + iOS | Operação madura |
+| Fase | Entrega | Marco comercial |
+|------|---------|-----------------|
+| ✅ 1 | Backend tempo real + geobusca | — |
+| ✅ Apps | PWA + APKs + página institucional + chamado v1 | Demonstração |
+| ✅ **2** | **Sistema no ar**: VPS + Docker + Nginx + HTTPS + speedx.titanhost.cloud | **Presença pública**: recrutar motoristas, parcerias, lista de espera, validar demanda |
+| **3** | **Identidade + corridas reais**: conta com telefone validado, JWT/bcrypt, corrida gravada no PostgreSQL com estados completos (cheguei → iniciar → finalizar), histórico, foto/placa/nota do motorista | **Receita piloto**: operação controlada em Teotônio Vilela — poucos motoristas, área limitada, suporte manual, cobrança simples |
+| **4** | **Pix + carteira + ledger**: repasse ao motorista, taxa da plataforma, estorno, comprovante, livro-caixa imutável | **Receita de verdade**: cobrança automática — o Speedx vira negócio |
+| **5** | **APK motorista robusto + admin**: GPS em segundo plano, push FCM, avaliações, Painel Admin (KYC, frota ao vivo, tarifas, bloqueios, relatórios) | **Escala**: de "app que funciona" para empresa operável |
+| **6** | **Compliance e expansão**: segurança (PIN, RideCheck, emergência, compartilhar viagem), OSRM (rotas/ETA reais), antifraude, suporte/tickets, auditoria | Operação madura e expansão regional |
+| 7+ | Surge por zona, heatmap, quests, modo destino, cupons/indicação, iOS | Paridade total de mercado |
+
+### 6.1 Marcos de receita (a régua honesta)
+
+1. **Agora (pós-Fase 2)** — receita indireta e pré-operacional: parcerias, patrocínio
+   local, pré-cadastro, contratos B2B. Ainda **não** é operação de transporte madura.
+2. **Pós-Fase 3** — piloto fechado com cobrança simples (taxa manual, mensalidade
+   simbólica de motorista, comissão controlada).
+3. **Pós-Fase 4** — primeiro marco de receita operacional séria: cobrança automática.
+4. **Pós-Fase 5** — ecossistema quase autoadministrável; hora de escalar.
+
+## 6.2 CONFORMIDADE LEGAL (Brasil) — nasce junto com o código
+
+- **Lei 13.640/2018** (Política Nacional de Mobilidade Urbana): a regulamentação e
+  fiscalização do transporte remunerado privado individual por aplicativo é
+  **competência municipal**. → Antes do lançamento comercial, validar a regra do
+  município de Teotônio Vilela/AL (e de cada cidade de expansão).
+- **Motoristas**: exigir CNH categoria B ou superior **com EAR** (Exerce Atividade
+  Remunerada) no cadastro/KYC — verificação obrigatória na Fase 5 (aprovação de
+  documentos no Painel Admin).
+- **LGPD (Lei 13.709/2018)**: o Speedx trata telefone, localização, documentos,
+  corridas e pagamentos. Obrigações desde a Fase 3:
+  - Política de privacidade pública no site e nos apps
+  - Consentimento explícito no cadastro
+  - Coleta mínima (só o necessário para a corrida)
+  - Direito de exportar e apagar os dados (rotas de autoatendimento)
+  - Logs de acesso a dados pessoais (trilha de auditoria)
+  - Retenção definida: trilhas GPS e documentos com prazo e propósito claros
+
+> **Mentalidade oficial do projeto:** a meta não é "ter um app tipo Uber" — é ter
+> um **sistema de mobilidade regional** com controle administrativo, financeiro,
+> jurídico e operacional próprio. A Uber vence pela operação, não só pelo app.
 
 ---
 
