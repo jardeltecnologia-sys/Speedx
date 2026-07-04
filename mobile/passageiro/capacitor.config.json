@@ -1,0 +1,8 @@
+{
+  "appId": "app.speedx.passageiro",
+  "appName": "Speedx Passageiro",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  }
+}

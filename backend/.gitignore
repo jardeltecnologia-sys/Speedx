@@ -1,0 +1,9 @@
+# Dependências (reinstaláveis via "npm install" - nunca versionar)
+node_modules/
+
+# Segredos - NUNCA envie senhas para o Git!
+.env
+
+# Logs
+*.log
+npm-debug.log*

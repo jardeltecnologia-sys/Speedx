@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<!-- ============================================================================
+  SPEEDX MOTORISTA - Tela principal
+  ============================================================================
+  Este é o app do MOTORISTA: um grande botão para ficar ONLINE/OFFLINE.
+  Enquanto online, o GPS do celular envia a posição ao servidor a cada
+  poucos segundos — e o carro aparece no mapa de todos os passageiros.
+============================================================================ -->
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#00E676" />
+  <title>Speedx — Motorista</title>
+
+  <link rel="stylesheet" href="vendor/leaflet.css" />
+  <link rel="stylesheet" href="css/app.css" />
+</head>
+<body>
+
+  <!-- ======================= CABEÇALHO ======================= -->
+  <header class="topo">
+    <div class="logo">
+      <svg viewBox="0 0 24 24" class="logo-raio" aria-hidden="true">
+        <path d="M13 2 L4 14 h6 l-1 8 9-12 h-6 z" fill="currentColor"/>
+      </svg>
+      <span class="logo-nome">Speed<span class="logo-x">x</span></span>
+      <span class="etiqueta-motorista">MOTORISTA</span>
+    </div>
+    <button id="btn-config" class="btn-icone" title="Configurar servidor">⚙️</button>
+  </header>
+
+  <!-- ======================= MAPA ======================= -->
+  <div id="mapa"></div>
+
+  <!-- ======================= PAINEL INFERIOR ======================= -->
+  <div class="painel">
+    <div class="painel-linha">
+      <span id="status-conexao" class="bolinha offline"></span>
+      <span id="texto-status">Você está offline</span>
+    </div>
+
+    <!-- O BOTÃO: coração do app do motorista -->
+    <button id="btn-online" class="btn-gigante">FICAR ONLINE</button>
+  </div>
+
+  <!-- ======================= MODAL DE CONFIGURAÇÃO ======================= -->
+  <div id="modal-config" class="modal escondido">
+    <div class="modal-caixa">
+      <h2>⚙️ Servidor Speedx</h2>
+      <p>Endereço do servidor (ex.: <code>http://192.168.0.10:3000</code> ou <code>https://speedx.seudominio.com</code>)</p>
+      <input id="campo-servidor" type="url" placeholder="http://..." />
+      <div class="modal-botoes">
+        <button id="btn-cancelar" class="btn secundario">Cancelar</button>
+        <button id="btn-salvar" class="btn primario">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="vendor/leaflet.js"></script>
+  <script src="vendor/socket.io.min.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

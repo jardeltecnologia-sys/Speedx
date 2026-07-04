@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Speedx Motorista</string>
+    <string name="title_activity_main">Speedx Motorista</string>
+    <string name="package_name">app.speedx.motorista</string>
+    <string name="custom_url_scheme">app.speedx.motorista</string>
+</resources>

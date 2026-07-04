@@ -1,0 +1,140 @@
+name: Build APKs Speedx (Passageiro + Motorista)
+
+# =============================================================================
+# COMO USAR: aba "Actions" do GitHub -> "Build APKs Speedx" -> "Run workflow".
+#
+# Este robô compila OS DOIS aplicativos Android do Speedx na nuvem
+# (nenhuma ferramenta Android é necessária no seu computador) e publica
+# os APKs prontos para download na aba "Releases" do repositório.
+#
+# server_url (opcional): endereço do servidor que fica GRAVADO dentro do APK
+# (window.SPEEDX_SERVER). Se deixar vazio, o app pergunta o endereço na
+# primeira abertura (engrenagem ⚙️) — dá para mudar a qualquer momento.
+# =============================================================================
+on:
+  workflow_dispatch:
+    inputs:
+      server_url:
+        description: 'URL do servidor Speedx (ex: https://speedx.seudominio.com). Vazio = configurar no app.'
+        required: false
+        default: ''
+        type: string
+
+permissions:
+  contents: write   # Necessário para publicar a Release com os APKs
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar o código
+        uses: actions/checkout@v5
+
+      - name: Preparar Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '20'
+
+      - name: Preparar Java 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Preparar Android SDK
+        uses: android-actions/setup-android@v3
+
+      # -----------------------------------------------------------------------
+      # ASSINATURA FIXA: sem uma chave estável, cada build sairia com assinatura
+      # diferente e o Android recusaria instalar por cima ("pacote conflitante").
+      # O keystore commitado vai para o local padrão que o Gradle usa no debug.
+      # -----------------------------------------------------------------------
+      - name: Instalar keystore fixo
+        run: |
+          mkdir -p "$HOME/.android"
+          cp mobile/debug.keystore "$HOME/.android/debug.keystore"
+          echo "Impressão digital da chave deste build:"
+          keytool -list -v -keystore mobile/debug.keystore -storepass android -alias androiddebugkey 2>/dev/null | grep -i "SHA256:" | head -1 || true
+
+      # -----------------------------------------------------------------------
+      # APP 1: SPEEDX PASSAGEIRO
+      # -----------------------------------------------------------------------
+      - name: Empacotar web do Passageiro
+        run: |
+          rm -rf mobile/passageiro/www
+          mkdir -p mobile/passageiro/www
+          cp -r apps/passageiro/. mobile/passageiro/www/
+          # Grava o endereço do servidor dentro do app (se informado)
+          if [ -n "${{ inputs.server_url }}" ]; then
+            node -e "const fs=require('fs');const f='mobile/passageiro/www/index.html';let h=fs.readFileSync(f,'utf8');const tag='<script>window.SPEEDX_SERVER=\"${{ inputs.server_url }}\";</script>';h=h.replace('</head>',tag+'\n</head>');fs.writeFileSync(f,h);console.log('SPEEDX_SERVER =>','${{ inputs.server_url }}')"
+          else
+            echo "Sem server_url: o app pedirá o endereço na primeira abertura (⚙️)."
+          fi
+
+      - name: Compilar APK do Passageiro
+        working-directory: mobile/passageiro
+        run: |
+          npm install --no-audit --no-fund
+          npx cap sync android
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon -Pvcode=${{ github.run_number }} -Pvname=1.0.${{ github.run_number }}
+
+      # -----------------------------------------------------------------------
+      # APP 2: SPEEDX MOTORISTA
+      # -----------------------------------------------------------------------
+      - name: Empacotar web do Motorista
+        run: |
+          rm -rf mobile/motorista/www
+          mkdir -p mobile/motorista/www
+          cp -r apps/motorista/. mobile/motorista/www/
+          if [ -n "${{ inputs.server_url }}" ]; then
+            node -e "const fs=require('fs');const f='mobile/motorista/www/index.html';let h=fs.readFileSync(f,'utf8');const tag='<script>window.SPEEDX_SERVER=\"${{ inputs.server_url }}\";</script>';h=h.replace('</head>',tag+'\n</head>');fs.writeFileSync(f,h);console.log('SPEEDX_SERVER =>','${{ inputs.server_url }}')"
+          else
+            echo "Sem server_url: o app pedirá o endereço na primeira abertura (⚙️)."
+          fi
+
+      - name: Compilar APK do Motorista
+        working-directory: mobile/motorista
+        run: |
+          npm install --no-audit --no-fund
+          npx cap sync android
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon -Pvcode=${{ github.run_number }} -Pvname=1.0.${{ github.run_number }}
+
+      # -----------------------------------------------------------------------
+      # ENTREGA: renomeia e publica os dois APKs na aba Releases
+      # -----------------------------------------------------------------------
+      - name: Renomear APKs
+        run: |
+          cp mobile/passageiro/android/app/build/outputs/apk/debug/app-debug.apk speedx-passageiro-${{ github.run_number }}.apk
+          cp mobile/motorista/android/app/build/outputs/apk/debug/app-debug.apk  speedx-motorista-${{ github.run_number }}.apk
+          ls -lh speedx-*.apk
+
+      - name: Guardar APKs como artefatos
+        uses: actions/upload-artifact@v4
+        with:
+          name: speedx-apks
+          path: speedx-*.apk
+
+      - name: Publicar Release com os APKs
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: apk-${{ github.run_number }}
+          name: Speedx APKs (build ${{ github.run_number }})
+          body: |
+            📱 **APKs do Speedx — build ${{ github.run_number }}**
+
+            | App | Arquivo | Para quem |
+            |---|---|---|
+            | 🟢 Passageiro | `speedx-passageiro-${{ github.run_number }}.apk` | Quem pede a corrida |
+            | ⚫ Motorista | `speedx-motorista-${{ github.run_number }}.apk` | Quem dirige |
+
+            **Servidor gravado no app:** `${{ inputs.server_url || 'nenhum — configure na engrenagem ⚙️ dentro do app' }}`
+
+            **Como instalar:** baixe o APK no celular, toque nele e permita
+            "instalar de fontes desconhecidas". Ao abrir, autorize a Localização.
+          files: |
+            speedx-passageiro-${{ github.run_number }}.apk
+            speedx-motorista-${{ github.run_number }}.apk

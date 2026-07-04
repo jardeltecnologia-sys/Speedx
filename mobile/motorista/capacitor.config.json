@@ -1,0 +1,8 @@
+{
+  "appId": "app.speedx.motorista",
+  "appName": "Speedx Motorista",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  }
+}

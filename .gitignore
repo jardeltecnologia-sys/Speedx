@@ -1,0 +1,13 @@
+# Dependências (reinstaláveis com "npm install")
+node_modules/
+
+# Pastas www dos projetos mobile: são GERADAS a partir de apps/ na hora do build
+mobile/passageiro/www/
+mobile/motorista/www/
+
+# Segredos: senhas NUNCA vão para o GitHub
+.env
+
+# Logs e lixo temporário
+*.log
+Thumbs.db

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<!-- ============================================================================
+  SPEEDX PASSAGEIRO - Tela principal
+  ============================================================================
+  Este é o app do PASSAGEIRO: mostra o mapa com os motoristas disponíveis
+  se movendo em tempo real (via WebSocket) ao redor da sua localização.
+  O mesmo código roda: no navegador (web) e dentro do APK (Capacitor).
+============================================================================ -->
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <!-- viewport-fit=cover: o app ocupa a tela inteira, inclusive atrás do notch -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#00E676" />
+  <title>Speedx — Passageiro</title>
+
+  <!-- Bibliotecas EMBARCADAS (funcionam dentro do APK sem depender de CDN) -->
+  <link rel="stylesheet" href="vendor/leaflet.css" />
+  <link rel="stylesheet" href="css/app.css" />
+</head>
+<body>
+
+  <!-- ======================= CABEÇALHO ======================= -->
+  <header class="topo">
+    <div class="logo">
+      <!-- Raio: símbolo da velocidade do Speedx -->
+      <svg viewBox="0 0 24 24" class="logo-raio" aria-hidden="true">
+        <path d="M13 2 L4 14 h6 l-1 8 9-12 h-6 z" fill="currentColor"/>
+      </svg>
+      <span class="logo-nome">Speed<span class="logo-x">x</span></span>
+    </div>
+    <button id="btn-config" class="btn-icone" title="Configurar servidor">⚙️</button>
+  </header>
+
+  <!-- ======================= MAPA ======================= -->
+  <div id="mapa"></div>
+
+  <!-- ======================= PAINEL INFERIOR ======================= -->
+  <div class="painel">
+    <div class="painel-linha">
+      <span id="status-conexao" class="bolinha offline" title="Estado da conexão"></span>
+      <span id="texto-status">Conectando ao Speedx...</span>
+    </div>
+    <div class="painel-destaque">
+      <span id="contador-motoristas">0</span>
+      <span class="painel-legenda">motoristas próximos de você</span>
+    </div>
+  </div>
+
+  <!-- ======================= MODAL DE CONFIGURAÇÃO ======================= -->
+  <!-- Permite apontar o app para o servidor certo (VPS, IP local, etc.) -->
+  <div id="modal-config" class="modal escondido">
+    <div class="modal-caixa">
+      <h2>⚙️ Servidor Speedx</h2>
+      <p>Endereço do servidor (ex.: <code>http://192.168.0.10:3000</code> ou <code>https://speedx.seudominio.com</code>)</p>
+      <input id="campo-servidor" type="url" placeholder="http://..." />
+      <div class="modal-botoes">
+        <button id="btn-cancelar" class="btn secundario">Cancelar</button>
+        <button id="btn-salvar" class="btn primario">Salvar e conectar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bibliotecas embarcadas + nosso código -->
+  <script src="vendor/leaflet.js"></script>
+  <script src="vendor/socket.io.min.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

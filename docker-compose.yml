@@ -1,0 +1,69 @@
+# ==============================================================================
+# SPEEDX - INFRAESTRUTURA DE DADOS (FASE 1)
+# ==============================================================================
+# Este arquivo é a "planta baixa" da nossa infraestrutura. Com um único comando
+# (docker compose up -d), o Docker sobe dois serviços isolados:
+#
+#   1. PostgreSQL -> banco de dados PERMANENTE (usuários, corridas, histórico)
+#   2. Redis      -> banco de dados EM MEMÓRIA (posição dos carros em tempo real)
+#
+# Ele funciona IGUAL no seu Windows e na VPS Hostinger. É isso que garante que
+# "funciona na minha máquina" vire "funciona em produção".
+# ==============================================================================
+
+services:
+
+  # ----------------------------------------------------------------------------
+  # POSTGRESQL - A memória permanente do Speedx
+  # ----------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine        # Versão 16, imagem "alpine" = leve (ideal p/ VPS)
+    container_name: speedx-postgres  # Nome fixo para facilitar comandos (docker logs speedx-postgres)
+    restart: unless-stopped          # Se o container cair, o Docker levanta sozinho
+    environment:
+      POSTGRES_USER: speedx                    # Usuário do banco
+      POSTGRES_PASSWORD: speedx_senha_123      # ATENÇÃO: troque por uma senha forte na VPS!
+      POSTGRES_DB: speedx                      # Banco criado automaticamente na 1ª vez
+    ports:
+      # Porta 5433 no host -> 5432 dentro do container.
+      # Usamos 5433 porque a 5432 já está ocupada pelo PostgreSQL do VibeTube.
+      - "5433:5432"
+    volumes:
+      # Volume nomeado: os dados sobrevivem mesmo se o container for destruído
+      - speedx_pg_data:/var/lib/postgresql/data
+      # Script de criação das tabelas: roda AUTOMATICAMENTE na primeira inicialização
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      # O Docker "pergunta" ao Postgres se ele está vivo a cada 5 segundos
+      test: ["CMD-SHELL", "pg_isready -U speedx -d speedx"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ----------------------------------------------------------------------------
+  # REDIS - A memória ultrarrápida (localização dos motoristas)
+  # ----------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: speedx-redis
+    restart: unless-stopped
+    ports:
+      # Porta 6380 no host -> 6379 dentro do container.
+      # Usamos 6380 porque a 6379 já está ocupada pelo Redis do VibeTube.
+      - "6380:6379"
+    volumes:
+      - speedx_redis_data:/data      # Persistência opcional (snapshots do Redis)
+    # --appendonly yes: grava um log das operações, para não perder tudo num restart
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]  # Se responder "PONG", está saudável
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+# ------------------------------------------------------------------------------
+# VOLUMES NOMEADOS - onde o Docker guarda os dados no disco do host
+# ------------------------------------------------------------------------------
+volumes:
+  speedx_pg_data:
+  speedx_redis_data:
