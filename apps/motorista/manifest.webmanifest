@@ -1,0 +1,15 @@
+{
+  "name": "Speedx Motorista",
+  "short_name": "Speedx Motorista",
+  "description": "Dirija e fature com o Speedx — receba chamados de corrida em tempo real.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0B0F0E",
+  "theme_color": "#00E676",
+  "icons": [
+    { "src": "icones/icone-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icones/icone-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

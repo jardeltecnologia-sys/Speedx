@@ -42,6 +42,54 @@ const PORT = process.env.PORT || 3000;
 const CHAVE_GEO_MOTORISTAS = 'speedx:motoristas:posicoes';
 
 // -----------------------------------------------------------------------------
+// TARIFA DO SPEEDX (primeira versão - depois vira configuração no banco)
+// -----------------------------------------------------------------------------
+const TARIFA_BASE = 3.00;       // Bandeirada: só de entrar no carro
+const TARIFA_POR_KM = 2.00;     // Cada quilômetro da viagem
+const TARIFA_MINIMA = 5.00;     // Nenhuma corrida custa menos que isso
+const CHAMADO_EXPIRA_MS = 20000; // Motorista tem 20s para aceitar ou o chamado passa adiante
+const RAIO_BUSCA_KM = 10;       // Procuramos motoristas em até 10 km do passageiro
+
+// Distância em linha reta entre dois pontos do globo (fórmula de Haversine).
+// Serve para ESTIMAR o preço; a distância real da rota vem numa fase futura.
+function distanciaKm(lat1, lng1, lat2, lng2) {
+  const R = 6371; // Raio da Terra em km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function calcularPreco(distanciaDaViagemKm) {
+  const preco = TARIFA_BASE + distanciaDaViagemKm * TARIFA_POR_KM;
+  return Math.max(TARIFA_MINIMA, Math.round(preco * 100) / 100);
+}
+
+// -----------------------------------------------------------------------------
+// CORRIDAS ATIVAS (memória do servidor)
+// -----------------------------------------------------------------------------
+// Enquanto não existe login (Fase 2), as corridas em andamento vivem aqui na
+// RAM. Quando a autenticação chegar, cada corrida também será gravada na
+// tabela "corridas" do PostgreSQL para virar histórico permanente.
+//
+// Estrutura de cada corrida:
+// { id, passageiroId, motoristaId, origem, destino, valorEstimado,
+//   fila: [motoristas candidatos por ordem de distância],
+//   status: 'procurando' | 'aceita', timer: <timeout do chamado atual> }
+const corridasAtivas = new Map();       // corridaId -> corrida
+const motoristasOcupados = new Set();   // motoristas que JÁ estão em corrida
+
+// Procura a corrida ativa de um passageiro (para evitar pedidos duplicados)
+function corridaDoPassageiro(passageiroId) {
+  for (const corrida of corridasAtivas.values()) {
+    if (corrida.passageiroId === passageiroId) return corrida;
+  }
+  return null;
+}
+
+// -----------------------------------------------------------------------------
 // 3. CONEXÃO COM O POSTGRESQL (banco permanente)
 // -----------------------------------------------------------------------------
 // Usamos um "Pool" em vez de uma conexão única: o pool mantém várias conexões
@@ -100,21 +148,23 @@ app.use((req, res, next) => {
 // -----------------------------------------------------------------------------
 // Os MESMOS arquivos que vão dentro dos APKs também são servidos aqui como
 // site: quem não baixou o app usa pelo navegador. APK e web sempre em sincronia.
+//   http://servidor/            -> página institucional (a vitrine do Speedx)
 //   http://servidor/passageiro  -> app do passageiro
 //   http://servidor/motorista   -> app do motorista
 app.use('/passageiro', express.static(path.join(__dirname, '..', 'apps', 'passageiro')));
 app.use('/motorista', express.static(path.join(__dirname, '..', 'apps', 'motorista')));
+app.use('/', express.static(path.join(__dirname, '..', 'apps', 'site')));
 
 // -----------------------------------------------------------------------------
 // 6. ROTAS DA API REST
 // -----------------------------------------------------------------------------
 
-// ROTA RAIZ - "cartão de visitas" da API
-app.get('/', (req, res) => {
+// CARTÃO DE VISITAS DA API (a raiz "/" agora é a página institucional)
+app.get('/api', (req, res) => {
   res.json({
     aplicativo: 'Speedx',
     descricao: 'API de mobilidade urbana - Teotônio Vilela/AL e o mundo 🌍',
-    versao: '1.0.0 (Fase 1)',
+    versao: '2.0.0 (Fase Apps + Chamados)',
     status: 'online'
   });
 });
@@ -206,6 +256,62 @@ app.get('/api/motoristas/proximos', async (req, res) => {
 // "Salas" (rooms) são grupos de conexões: mandamos mensagens só para quem
 // precisa recebê-las, em vez de gritar para todo mundo.
 
+// -----------------------------------------------------------------------------
+// O MOTOR DE CHAMADOS - oferece a corrida a UM motorista por vez
+// -----------------------------------------------------------------------------
+// Estratégia (a mesma essência da Uber):
+//   1. Ordenamos os motoristas do mais perto ao mais longe (Redis já entrega assim)
+//   2. Oferecemos ao 1º da fila com um prazo de 20 segundos
+//   3. Recusou ou não respondeu? O chamado passa AUTOMATICAMENTE para o próximo
+//   4. Fila esvaziou? Avisamos o passageiro que não há motoristas agora
+function oferecerParaProximo(corrida) {
+  // Descarta candidatos que ficaram ocupados enquanto esperavam na fila
+  let candidato = null;
+  while (corrida.fila.length > 0) {
+    const proximo = corrida.fila.shift();
+    if (!motoristasOcupados.has(proximo.motoristaId)) { candidato = proximo; break; }
+  }
+
+  // Ninguém sobrou: fim da linha, avisamos o passageiro
+  if (!candidato) {
+    io.to(`passageiro:${corrida.passageiroId}`).emit('corrida:sem_motorista', {
+      corridaId: corrida.id,
+      mensagem: 'Nenhum motorista disponível agora. Tente novamente em instantes.'
+    });
+    corridasAtivas.delete(corrida.id);
+    console.log(`😞 [Corrida ${corrida.id}] Sem motoristas disponíveis.`);
+    return;
+  }
+
+  corrida.motoristaOfertado = candidato.motoristaId;
+  console.log(`📢 [Corrida ${corrida.id}] Chamado enviado ao motorista ${candidato.motoristaId} (${candidato.distanciaKm} km)`);
+
+  // O CHAMADO: cai como notificação na tela do app do motorista
+  io.to(`motorista:${candidato.motoristaId}`).emit('corrida:chamado', {
+    corridaId: corrida.id,
+    origem: corrida.origem,
+    destino: corrida.destino,
+    distanciaAteVoceKm: candidato.distanciaKm,
+    viagemKm: corrida.viagemKm,
+    valorEstimado: corrida.valorEstimado,
+    expiraEmSegundos: CHAMADO_EXPIRA_MS / 1000
+  });
+
+  // Relógio correndo: sem resposta em 20s, tratamos como recusa silenciosa
+  corrida.timer = setTimeout(() => {
+    console.log(`⏰ [Corrida ${corrida.id}] Motorista ${candidato.motoristaId} não respondeu a tempo.`);
+    corrida.motoristaOfertado = null;
+    oferecerParaProximo(corrida);
+  }, CHAMADO_EXPIRA_MS);
+}
+
+// Encerra e limpa uma corrida, liberando o motorista para novos chamados
+function limparCorrida(corrida) {
+  if (corrida.timer) clearTimeout(corrida.timer);
+  if (corrida.motoristaId) motoristasOcupados.delete(corrida.motoristaId);
+  corridasAtivas.delete(corrida.id);
+}
+
 io.on('connection', (socket) => {
   console.log(`🔌 [Socket] Nova conexão: ${socket.id}`);
 
@@ -221,7 +327,8 @@ io.on('connection', (socket) => {
     // Guardamos o ID DENTRO do socket: quando ele desconectar, saberemos quem era
     socket.data.motoristaId = dados.motoristaId;
     socket.data.tipo = 'motorista';
-    socket.join('sala:motoristas'); // Entra na sala dos motoristas
+    socket.join('sala:motoristas');                       // Sala geral dos motoristas
+    socket.join(`motorista:${dados.motoristaId}`);        // Sala INDIVIDUAL: é por aqui que o chamado chega
 
     console.log(`🚗 [Socket] Motorista online: ${dados.motoristaId}`);
     socket.emit('motorista:conectado', { mensagem: 'Você está online no Speedx!' });
@@ -238,7 +345,8 @@ io.on('connection', (socket) => {
 
     socket.data.passageiroId = dados.passageiroId;
     socket.data.tipo = 'passageiro';
-    socket.join('sala:passageiros'); // Entra na sala dos passageiros
+    socket.join('sala:passageiros');                      // Sala geral dos passageiros
+    socket.join(`passageiro:${dados.passageiroId}`);      // Sala INDIVIDUAL: respostas da corrida chegam aqui
 
     console.log(`🧍 [Socket] Passageiro online: ${dados.passageiroId}`);
     socket.emit('passageiro:conectado', { mensagem: 'Bem-vindo ao Speedx!' });
@@ -284,6 +392,171 @@ io.on('connection', (socket) => {
     }
   });
 
+  // ===========================================================================
+  //                        O CICLO DA CORRIDA
+  // ===========================================================================
+
+  // ---------------------------------------------------------------------------
+  // EVENTO: passageiro pede uma corrida
+  // Formato: { origem: {latitude, longitude}, destino: {latitude, longitude} }
+  // ---------------------------------------------------------------------------
+  socket.on('corrida:pedir', async (dados) => {
+    try {
+      if (socket.data.tipo !== 'passageiro') {
+        return socket.emit('erro', { mensagem: 'Identifique-se com passageiro:conectar primeiro.' });
+      }
+
+      const origem = dados?.origem, destino = dados?.destino;
+      if (!origem || !destino ||
+          isNaN(parseFloat(origem.latitude)) || isNaN(parseFloat(origem.longitude)) ||
+          isNaN(parseFloat(destino.latitude)) || isNaN(parseFloat(destino.longitude))) {
+        return socket.emit('erro', { mensagem: 'Origem e destino são obrigatórios.' });
+      }
+
+      // Uma corrida por vez: se já tem uma rolando, não deixa pedir outra
+      if (corridaDoPassageiro(socket.data.passageiroId)) {
+        return socket.emit('erro', { mensagem: 'Você já tem uma corrida em andamento.' });
+      }
+
+      // Preço estimado da viagem (origem -> destino)
+      const viagemKm = distanciaKm(
+        parseFloat(origem.latitude), parseFloat(origem.longitude),
+        parseFloat(destino.latitude), parseFloat(destino.longitude)
+      );
+      const valorEstimado = calcularPreco(viagemKm);
+
+      // Busca os motoristas próximos, JÁ ordenados do mais perto ao mais longe
+      const resultados = await redis.geoSearchWith(
+        CHAVE_GEO_MOTORISTAS,
+        { longitude: parseFloat(origem.longitude), latitude: parseFloat(origem.latitude) },
+        { radius: RAIO_BUSCA_KM, unit: 'km' },
+        [GeoReplyWith.DISTANCE],
+        { SORT: 'ASC' }
+      );
+
+      // Monta a fila de candidatos (só motoristas LIVRES entram)
+      const fila = resultados
+        .filter((r) => !motoristasOcupados.has(r.member))
+        .map((r) => ({
+          motoristaId: r.member,
+          distanciaKm: Math.round(parseFloat(r.distance) * 100) / 100
+        }));
+
+      const corrida = {
+        id: require('crypto').randomUUID(),
+        passageiroId: socket.data.passageiroId,
+        motoristaId: null,          // Preenchido quando alguém aceitar
+        motoristaOfertado: null,    // Quem está com o chamado na tela agora
+        origem, destino,
+        viagemKm: Math.round(viagemKm * 100) / 100,
+        valorEstimado,
+        fila,
+        status: 'procurando',
+        timer: null
+      };
+      corridasAtivas.set(corrida.id, corrida);
+
+      console.log(`🙋 [Corrida ${corrida.id}] Pedido de ${corrida.passageiroId} — R$ ${valorEstimado} (${corrida.viagemKm} km, ${fila.length} candidatos)`);
+
+      // Conta ao passageiro que estamos procurando (com o preço estimado)
+      socket.emit('corrida:procurando', {
+        corridaId: corrida.id,
+        valorEstimado,
+        viagemKm: corrida.viagemKm,
+        motoristasNaFila: fila.length
+      });
+
+      oferecerParaProximo(corrida); // Dispara o primeiro chamado
+    } catch (erro) {
+      console.error('❌ [Corrida] Erro ao pedir:', erro.message);
+      socket.emit('erro', { mensagem: 'Erro ao pedir a corrida. Tente novamente.' });
+    }
+  });
+
+  // ---------------------------------------------------------------------------
+  // EVENTO: motorista ACEITA o chamado
+  // ---------------------------------------------------------------------------
+  socket.on('corrida:aceitar', (dados) => {
+    const corrida = corridasAtivas.get(dados?.corridaId);
+    // Só vale se a corrida existe, ainda procura motorista e o chamado é DELE
+    if (!corrida || corrida.status !== 'procurando' ||
+        corrida.motoristaOfertado !== socket.data.motoristaId) {
+      return socket.emit('erro', { mensagem: 'Este chamado não está mais disponível.' });
+    }
+
+    clearTimeout(corrida.timer); // Para o relógio do chamado
+    corrida.status = 'aceita';
+    corrida.motoristaId = socket.data.motoristaId;
+    corrida.motoristaOfertado = null;
+    motoristasOcupados.add(corrida.motoristaId); // Não recebe outros chamados
+
+    console.log(`✅ [Corrida ${corrida.id}] Aceita pelo motorista ${corrida.motoristaId}!`);
+
+    // Confirma para o MOTORISTA (com origem e destino para ele se guiar)
+    socket.emit('corrida:confirmada', {
+      corridaId: corrida.id,
+      origem: corrida.origem,
+      destino: corrida.destino,
+      valorEstimado: corrida.valorEstimado
+    });
+
+    // Avisa o PASSAGEIRO: seu carro está a caminho!
+    io.to(`passageiro:${corrida.passageiroId}`).emit('corrida:aceita', {
+      corridaId: corrida.id,
+      motoristaId: corrida.motoristaId,
+      valorEstimado: corrida.valorEstimado
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // EVENTO: motorista RECUSA o chamado -> passa para o próximo da fila
+  // ---------------------------------------------------------------------------
+  socket.on('corrida:recusar', (dados) => {
+    const corrida = corridasAtivas.get(dados?.corridaId);
+    if (!corrida || corrida.motoristaOfertado !== socket.data.motoristaId) return;
+
+    console.log(`🙅 [Corrida ${corrida.id}] Recusada por ${socket.data.motoristaId}, chamando o próximo...`);
+    clearTimeout(corrida.timer);
+    corrida.motoristaOfertado = null;
+    oferecerParaProximo(corrida);
+  });
+
+  // ---------------------------------------------------------------------------
+  // EVENTO: passageiro CANCELA a corrida
+  // ---------------------------------------------------------------------------
+  socket.on('corrida:cancelar', (dados) => {
+    const corrida = corridasAtivas.get(dados?.corridaId);
+    if (!corrida || corrida.passageiroId !== socket.data.passageiroId) return;
+
+    console.log(`🚫 [Corrida ${corrida.id}] Cancelada pelo passageiro.`);
+    // Se um motorista já tinha aceitado (ou está vendo o chamado), avisamos
+    const alvo = corrida.motoristaId || corrida.motoristaOfertado;
+    if (alvo) {
+      io.to(`motorista:${alvo}`).emit('corrida:cancelada', {
+        corridaId: corrida.id,
+        mensagem: 'O passageiro cancelou a corrida.'
+      });
+    }
+    limparCorrida(corrida);
+  });
+
+  // ---------------------------------------------------------------------------
+  // EVENTO: motorista FINALIZA a corrida (chegou ao destino)
+  // ---------------------------------------------------------------------------
+  socket.on('corrida:finalizar', (dados) => {
+    const corrida = corridasAtivas.get(dados?.corridaId);
+    if (!corrida || corrida.motoristaId !== socket.data.motoristaId) return;
+
+    console.log(`🏁 [Corrida ${corrida.id}] Finalizada! Valor: R$ ${corrida.valorEstimado}`);
+    io.to(`passageiro:${corrida.passageiroId}`).emit('corrida:finalizada', {
+      corridaId: corrida.id,
+      valorEstimado: corrida.valorEstimado,
+      mensagem: 'Você chegou! Obrigado por viajar de Speedx. 💚'
+    });
+    socket.emit('corrida:encerrada', { corridaId: corrida.id, valorEstimado: corrida.valorEstimado });
+    limparCorrida(corrida);
+  });
+
   // ---------------------------------------------------------------------------
   // EVENTO: conexão caiu (app fechado, sem internet, etc.)
   // Se era um motorista, ele SOME do mapa — removemos a posição do Redis para
@@ -291,6 +564,38 @@ io.on('connection', (socket) => {
   // ---------------------------------------------------------------------------
   socket.on('disconnect', async () => {
     console.log(`🔌 [Socket] Desconectado: ${socket.id}`);
+
+    // Se alguém caiu NO MEIO de uma corrida, a outra parte precisa saber
+    for (const corrida of corridasAtivas.values()) {
+      // Motorista sumiu segurando o chamado? Passa para o próximo da fila.
+      if (socket.data.tipo === 'motorista' &&
+          corrida.motoristaOfertado === socket.data.motoristaId) {
+        clearTimeout(corrida.timer);
+        corrida.motoristaOfertado = null;
+        oferecerParaProximo(corrida);
+      }
+      // Motorista caiu com corrida aceita? Avisa o passageiro.
+      if (socket.data.tipo === 'motorista' &&
+          corrida.motoristaId === socket.data.motoristaId) {
+        io.to(`passageiro:${corrida.passageiroId}`).emit('corrida:cancelada', {
+          corridaId: corrida.id,
+          mensagem: 'O motorista perdeu a conexão. Peça uma nova corrida.'
+        });
+        limparCorrida(corrida);
+      }
+      // Passageiro caiu? Libera o motorista.
+      if (socket.data.tipo === 'passageiro' &&
+          corrida.passageiroId === socket.data.passageiroId) {
+        const alvo = corrida.motoristaId || corrida.motoristaOfertado;
+        if (alvo) {
+          io.to(`motorista:${alvo}`).emit('corrida:cancelada', {
+            corridaId: corrida.id,
+            mensagem: 'O passageiro perdeu a conexão.'
+          });
+        }
+        limparCorrida(corrida);
+      }
+    }
 
     if (socket.data.tipo === 'motorista' && socket.data.motoristaId) {
       try {

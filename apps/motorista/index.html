@@ -13,6 +13,11 @@
   <meta name="theme-color" content="#00E676" />
   <title>Speedx — Motorista</title>
 
+  <!-- PWA: torna o app INSTALÁVEL direto do navegador (sem loja!) -->
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icones/icone-192.png" />
+  <link rel="apple-touch-icon" href="icones/icone-192.png" />
+
   <link rel="stylesheet" href="vendor/leaflet.css" />
   <link rel="stylesheet" href="css/app.css" />
 </head>
@@ -42,6 +47,25 @@
 
     <!-- O BOTÃO: coração do app do motorista -->
     <button id="btn-online" class="btn-gigante">FICAR ONLINE</button>
+
+    <!-- Aparece somente durante uma corrida aceita -->
+    <button id="btn-finalizar" class="btn-gigante finalizar escondido">FINALIZAR CORRIDA 🏁</button>
+  </div>
+
+  <!-- ======================= MODAL DO CHAMADO ======================= -->
+  <!-- O coração do negócio: cai na tela quando um passageiro pede corrida -->
+  <div id="modal-chamado" class="modal escondido">
+    <div class="modal-caixa chamado">
+      <h2>🚕 NOVA CORRIDA!</h2>
+      <div id="chamado-valor" class="chamado-valor">R$ 0,00</div>
+      <p id="chamado-detalhes">—</p>
+      <!-- Barra do tempo: encolhe até o chamado expirar -->
+      <div class="chamado-tempo"><div id="chamado-barra"></div></div>
+      <div class="modal-botoes chamado-botoes">
+        <button id="btn-recusar" class="btn secundario">RECUSAR</button>
+        <button id="btn-aceitar" class="btn primario">ACEITAR ✔</button>
+      </div>
+    </div>
   </div>
 
   <!-- ======================= MODAL DE CONFIGURAÇÃO ======================= -->

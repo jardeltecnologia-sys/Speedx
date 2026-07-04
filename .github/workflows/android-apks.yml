@@ -108,8 +108,13 @@ jobs:
       # -----------------------------------------------------------------------
       - name: Renomear APKs
         run: |
+          # Nome com número do build (histórico) + nome FIXO (para o link
+          # "releases/latest/download/..." da página institucional e dos QR codes
+          # apontar SEMPRE para a versão mais recente)
           cp mobile/passageiro/android/app/build/outputs/apk/debug/app-debug.apk speedx-passageiro-${{ github.run_number }}.apk
           cp mobile/motorista/android/app/build/outputs/apk/debug/app-debug.apk  speedx-motorista-${{ github.run_number }}.apk
+          cp speedx-passageiro-${{ github.run_number }}.apk speedx-passageiro.apk
+          cp speedx-motorista-${{ github.run_number }}.apk  speedx-motorista.apk
           ls -lh speedx-*.apk
 
       - name: Guardar APKs como artefatos
@@ -138,3 +143,5 @@ jobs:
           files: |
             speedx-passageiro-${{ github.run_number }}.apk
             speedx-motorista-${{ github.run_number }}.apk
+            speedx-passageiro.apk
+            speedx-motorista.apk

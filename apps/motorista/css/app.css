@@ -198,3 +198,49 @@ html, body {
   border: 2px solid var(--vermelho);
   box-shadow: none;
 }
+
+/* ============================================================================
+   O CHAMADO DE CORRIDA (app do motorista)
+============================================================================ */
+
+/* Classe utilitária: esconde qualquer elemento */
+.escondido { display: none !important; }
+
+/* Marcadores de emoji no mapa (passageiro 🧍, destino 🎯) */
+.marcador-emoji {
+  font-size: 26px;
+  filter: drop-shadow(0 0 6px rgba(0,230,118,.9));
+}
+
+/* Caixa do chamado: chamativa, é dinheiro entrando! */
+.modal-caixa.chamado { text-align: center; border-color: var(--verde); }
+
+.chamado-valor {
+  font-size: 44px;
+  font-weight: 900;
+  color: var(--verde);
+  margin: 6px 0;
+  text-shadow: 0 0 24px rgba(0,230,118,.4);
+}
+
+/* Barra de tempo do chamado (a largura é controlada pelo JavaScript) */
+.chamado-tempo {
+  height: 8px;
+  background: rgba(255,255,255,.08);
+  border-radius: 999px;
+  overflow: hidden;
+  margin: 14px 0 18px 0;
+}
+#chamado-barra {
+  height: 100%;
+  width: 100%;
+  background: var(--verde);
+  border-radius: 999px;
+  transition: width 1s linear;
+}
+
+.chamado-botoes { justify-content: space-between; }
+.chamado-botoes .btn { flex: 1; padding: 16px; font-size: 16px; }
+
+/* Botão de finalizar corrida */
+.btn-gigante.finalizar { background: var(--verde); }

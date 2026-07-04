@@ -14,6 +14,11 @@
   <meta name="theme-color" content="#00E676" />
   <title>Speedx — Passageiro</title>
 
+  <!-- PWA: torna o app INSTALÁVEL direto do navegador (sem loja!) -->
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icones/icone-192.png" />
+  <link rel="apple-touch-icon" href="icones/icone-192.png" />
+
   <!-- Bibliotecas EMBARCADAS (funcionam dentro do APK sem depender de CDN) -->
   <link rel="stylesheet" href="vendor/leaflet.css" />
   <link rel="stylesheet" href="css/app.css" />
@@ -45,6 +50,10 @@
       <span id="contador-motoristas">0</span>
       <span class="painel-legenda">motoristas próximos de você</span>
     </div>
+
+    <!-- Área da corrida: a dica orienta o passageiro e o botão pede/cancela -->
+    <p id="dica-corrida" class="dica">Toque no mapa para marcar o seu destino 🎯</p>
+    <button id="btn-corrida" class="btn-gigante escondido">PEDIR CORRIDA</button>
   </div>
 
   <!-- ======================= MODAL DE CONFIGURAÇÃO ======================= -->

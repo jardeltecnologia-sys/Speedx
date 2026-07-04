@@ -105,6 +105,74 @@ function moverMeuCarro(latitude, longitude) {
 }
 
 // -----------------------------------------------------------------------------
+// 3.5. O CHAMADO DE CORRIDA - aceitar, recusar, guiar e finalizar
+// -----------------------------------------------------------------------------
+let chamadoCorridaId = null;   // Chamado exibido na tela agora
+let corridaAceitaId = null;    // Corrida em andamento
+let timerChamado = null;       // Relógio local da barra de tempo
+let marcadorPassageiro = null; // 🧍 onde buscar o passageiro
+let marcadorDestino = null;    // 🎯 onde deixá-lo
+
+const iconePassageiro = L.divIcon({ className: '', html: '<div class="marcador-emoji">🧍</div>', iconSize: [30, 30], iconAnchor: [15, 15] });
+const iconeDestino = L.divIcon({ className: '', html: '<div class="marcador-emoji">🎯</div>', iconSize: [30, 30], iconAnchor: [15, 15] });
+
+const modalChamado = document.getElementById('modal-chamado');
+const chamadoValor = document.getElementById('chamado-valor');
+const chamadoDetalhes = document.getElementById('chamado-detalhes');
+const chamadoBarra = document.getElementById('chamado-barra');
+const btnAceitar = document.getElementById('btn-aceitar');
+const btnRecusar = document.getElementById('btn-recusar');
+const btnFinalizar = document.getElementById('btn-finalizar');
+
+// Mostra o chamado na tela com a barra de tempo encolhendo segundo a segundo
+function mostrarChamado(dados) {
+  chamadoCorridaId = dados.corridaId;
+  chamadoValor.textContent = `R$ ${dados.valorEstimado.toFixed(2).replace('.', ',')}`;
+  chamadoDetalhes.textContent =
+    `Passageiro a ${dados.distanciaAteVoceKm} km de você • viagem de ${dados.viagemKm} km`;
+  modalChamado.classList.remove('escondido');
+
+  // Conta regressiva local: espelha o prazo do servidor
+  let restante = dados.expiraEmSegundos;
+  chamadoBarra.style.width = '100%';
+  clearInterval(timerChamado);
+  timerChamado = setInterval(() => {
+    restante -= 1;
+    chamadoBarra.style.width = `${Math.max(0, (restante / dados.expiraEmSegundos) * 100)}%`;
+    if (restante <= 0) esconderChamado(); // O servidor já passou ao próximo
+  }, 1000);
+}
+
+function esconderChamado() {
+  clearInterval(timerChamado);
+  timerChamado = null;
+  chamadoCorridaId = null;
+  modalChamado.classList.add('escondido');
+}
+
+// Limpa a corrida da tela (fim, cancelamento ou queda do passageiro)
+function limparCorridaDaTela() {
+  corridaAceitaId = null;
+  if (marcadorPassageiro) { mapa.removeLayer(marcadorPassageiro); marcadorPassageiro = null; }
+  if (marcadorDestino) { mapa.removeLayer(marcadorDestino); marcadorDestino = null; }
+  btnFinalizar.classList.add('escondido');
+  botao.classList.remove('escondido');
+}
+
+btnAceitar.addEventListener('click', () => {
+  if (socket && chamadoCorridaId) socket.emit('corrida:aceitar', { corridaId: chamadoCorridaId });
+});
+
+btnRecusar.addEventListener('click', () => {
+  if (socket && chamadoCorridaId) socket.emit('corrida:recusar', { corridaId: chamadoCorridaId });
+  esconderChamado();
+});
+
+btnFinalizar.addEventListener('click', () => {
+  if (socket && corridaAceitaId) socket.emit('corrida:finalizar', { corridaId: corridaAceitaId });
+});
+
+// -----------------------------------------------------------------------------
 // 4. FICAR ONLINE / OFFLINE
 // -----------------------------------------------------------------------------
 let socket = null;
@@ -149,6 +217,39 @@ async function ficarOnline() {
     botao.textContent = 'FICAR OFFLINE';
     botao.classList.add('ligado');
     definirStatus('Você está ONLINE — visível para os passageiros 🚗💨', true);
+  });
+
+  // ------------------------- EVENTOS DO CHAMADO -------------------------
+
+  // 📢 UM PASSAGEIRO PEDIU CORRIDA e você é o escolhido da vez!
+  socket.on('corrida:chamado', (dados) => mostrarChamado(dados));
+
+  // Você aceitou e o servidor confirmou: hora de trabalhar
+  socket.on('corrida:confirmada', (dados) => {
+    esconderChamado();
+    corridaAceitaId = dados.corridaId;
+
+    // Marca no mapa onde BUSCAR (🧍) e onde DEIXAR (🎯) o passageiro
+    marcadorPassageiro = L.marker([dados.origem.latitude, dados.origem.longitude], { icon: iconePassageiro }).addTo(mapa);
+    marcadorDestino = L.marker([dados.destino.latitude, dados.destino.longitude], { icon: iconeDestino }).addTo(mapa);
+
+    // Troca o botão ONLINE pelo FINALIZAR enquanto dura a corrida
+    botao.classList.add('escondido');
+    btnFinalizar.classList.remove('escondido');
+    definirStatus(`Corrida aceita! Busque o passageiro 🧍 — R$ ${dados.valorEstimado.toFixed(2).replace('.', ',')}`, true);
+  });
+
+  // Corrida concluída: valor no bolso e de volta à praça
+  socket.on('corrida:encerrada', (dados) => {
+    limparCorridaDaTela();
+    definirStatus(`🏁 Corrida finalizada! R$ ${dados.valorEstimado.toFixed(2).replace('.', ',')} — você está online.`, true);
+  });
+
+  // O passageiro cancelou ou caiu
+  socket.on('corrida:cancelada', (dados) => {
+    esconderChamado();
+    limparCorridaDaTela();
+    definirStatus(`${dados.mensagem} Você segue online.`, true);
   });
 
   socket.on('disconnect', () => {
@@ -218,5 +319,14 @@ document.getElementById('btn-salvar').addEventListener('click', () => {
     }
   } catch {
     console.warn('GPS indisponível na abertura — mapa no centro padrão.');
+  }
+
+  // PWA: registra o Service Worker (só na versão WEB — dentro do APK o
+  // Capacitor já cuida dos arquivos locais, o SW seria redundante)
+  const ehNativo = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+  if ('serviceWorker' in navigator && !ehNativo) {
+    navigator.serviceWorker.register('sw.js').catch((erro) =>
+      console.warn('Service Worker não registrado:', erro.message)
+    );
   }
 })();

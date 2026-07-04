@@ -156,3 +156,46 @@ html, body {
 .btn.primario  { background: var(--verde); color: #05130C; }
 .btn.primario:active { background: var(--verde-escuro); }
 .btn.secundario { background: transparent; color: var(--texto-suave); border: 1px solid rgba(255,255,255,.15); }
+
+/* ============================================================================
+   PEDIR CORRIDA (app do passageiro)
+============================================================================ */
+
+/* Classe utilitária: esconde qualquer elemento */
+.escondido { display: none !important; }
+
+/* Dica/status da corrida no painel */
+.dica { color: var(--texto-suave); font-size: 13px; margin-top: 10px; }
+.dica.destaque { color: var(--verde); font-weight: 700; }
+
+/* Marcadores de emoji no mapa (destino 🎯, passageiro 🧍...) */
+.marcador-emoji {
+  font-size: 26px;
+  filter: drop-shadow(0 0 6px rgba(0,230,118,.9));
+}
+
+/* Botão gigante de ação (mesmo DNA do app do motorista) */
+.btn-gigante {
+  width: 100%;
+  margin-top: 12px;
+  padding: 18px;
+  border: none;
+  border-radius: 16px;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  cursor: pointer;
+  background: var(--verde);
+  color: #05130C;
+  box-shadow: 0 6px 24px rgba(0,230,118,.35);
+  transition: all .2s ease;
+}
+.btn-gigante:active { transform: scale(.98); }
+
+/* Enquanto procura/viaja, o botão vira CANCELAR (vermelho vazado) */
+.btn-gigante.cancelar {
+  background: transparent;
+  color: var(--vermelho);
+  border: 2px solid var(--vermelho);
+  box-shadow: none;
+}

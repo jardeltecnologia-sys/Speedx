@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<!-- ============================================================================
+  SPEEDX - PÁGINA INSTITUCIONAL
+  ============================================================================
+  A vitrine mundial do Speedx, servida na RAIZ do servidor (a "casa" na VPS).
+  Daqui, qualquer pessoa do planeta pode:
+    - Usar os apps direto no navegador (PWA instalável)
+    - Baixar os APKs Android (links da aba Releases do GitHub)
+  Estrutura inspirada nos grandes apps de mobilidade: herói forte, uma seção
+  para passageiros, uma para motoristas e o passo a passo de como funciona.
+============================================================================ -->
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#00E676" />
+  <meta name="description" content="Speedx — mobilidade urbana em alta velocidade. Peça corridas ou dirija e fature. Nascido em Teotônio Vilela/AL, pronto para o mundo." />
+  <title>Speedx — Vá a qualquer lugar</title>
+  <link rel="icon" href="icone-64.png" />
+
+  <style>
+    /* ============ IDENTIDADE SPEEDX: verde vibrante + tema escuro ============ */
+    :root {
+      --verde: #00E676;
+      --verde-escuro: #00B25C;
+      --fundo: #0B0F0E;
+      --painel: #141A18;
+      --texto: #F2F7F4;
+      --texto-suave: #9DB0A6;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+      background: var(--fundo);
+      color: var(--texto);
+      line-height: 1.6;
+    }
+
+    .container { max-width: 1080px; margin: 0 auto; padding: 0 20px; }
+
+    /* ============ CABEÇALHO ============ */
+    header {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(11,15,14,.92);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(0,230,118,.15);
+    }
+    .barra {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 20px; max-width: 1080px; margin: 0 auto;
+    }
+    .logo { display: flex; align-items: center; gap: 8px; font-size: 24px; font-weight: 800; }
+    .logo svg { width: 28px; height: 28px; color: var(--verde); }
+    .logo .x { color: var(--verde); }
+    nav a {
+      color: var(--texto-suave); text-decoration: none; margin-left: 22px;
+      font-size: 15px; font-weight: 600;
+    }
+    nav a:hover { color: var(--verde); }
+
+    /* ============ HERÓI ============ */
+    .heroi {
+      padding: 90px 20px 70px;
+      text-align: center;
+      background:
+        radial-gradient(ellipse at 50% -20%, rgba(0,230,118,.18), transparent 60%),
+        var(--fundo);
+    }
+    .heroi h1 { font-size: clamp(34px, 6vw, 58px); font-weight: 900; letter-spacing: -1px; }
+    .heroi h1 .x { color: var(--verde); }
+    .heroi p.sub {
+      color: var(--texto-suave); font-size: clamp(16px, 2.5vw, 20px);
+      max-width: 640px; margin: 18px auto 34px;
+    }
+    .heroi .acoes { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+
+    .btn {
+      display: inline-block; text-decoration: none; cursor: pointer;
+      padding: 16px 28px; border-radius: 14px;
+      font-size: 16px; font-weight: 800; letter-spacing: .3px;
+      transition: transform .15s ease, box-shadow .15s ease;
+    }
+    .btn:active { transform: scale(.97); }
+    .btn.primario {
+      background: var(--verde); color: #05130C;
+      box-shadow: 0 8px 30px rgba(0,230,118,.35);
+    }
+    .btn.primario:hover { background: var(--verde-escuro); }
+    .btn.vazado {
+      background: transparent; color: var(--verde);
+      border: 2px solid var(--verde);
+    }
+    .btn.vazado:hover { background: rgba(0,230,118,.08); }
+
+    /* ============ CARTÕES PASSAGEIRO / MOTORISTA ============ */
+    .apps { padding: 30px 0 10px; }
+    .grade {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 22px; margin-top: 10px;
+    }
+    .cartao {
+      background: var(--painel);
+      border: 1px solid rgba(0,230,118,.18);
+      border-radius: 22px;
+      padding: 30px;
+    }
+    .cartao .icone {
+      width: 64px; height: 64px; border-radius: 18px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 18px;
+    }
+    .cartao .icone svg { width: 34px; height: 34px; }
+    .icone.verde { background: var(--verde); color: #05130C; }
+    .icone.escuro { background: #05130C; color: var(--verde); border: 1px solid rgba(0,230,118,.35); }
+    .cartao h2 { font-size: 26px; margin-bottom: 8px; }
+    .cartao p { color: var(--texto-suave); font-size: 15px; margin-bottom: 20px; }
+    .cartao ul { list-style: none; margin-bottom: 24px; }
+    .cartao li { color: var(--texto); font-size: 15px; padding: 5px 0; }
+    .cartao li::before { content: "✔ "; color: var(--verde); font-weight: 800; }
+    .cartao .botoes { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; }
+    .cartao .botoes .btn { padding: 13px 20px; font-size: 14px; }
+
+    /* QR code para baixar no celular apontando a câmera */
+    .qr {
+      display: flex; align-items: center; gap: 14px;
+      background: rgba(0,0,0,.25); border-radius: 14px; padding: 12px 16px;
+    }
+    .qr img { width: 92px; height: 92px; border-radius: 8px; background: #fff; padding: 4px; }
+    .qr span { color: var(--texto-suave); font-size: 13px; }
+
+    /* ============ COMO FUNCIONA ============ */
+    .como { padding: 70px 0; text-align: center; }
+    .como h2 { font-size: 32px; margin-bottom: 40px; }
+    .passos { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+    .passo { background: var(--painel); border-radius: 18px; padding: 26px; border: 1px solid rgba(255,255,255,.06); }
+    .passo .numero {
+      width: 44px; height: 44px; margin: 0 auto 14px;
+      background: var(--verde); color: #05130C;
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-weight: 900; font-size: 20px;
+    }
+    .passo h3 { font-size: 18px; margin-bottom: 6px; }
+    .passo p { color: var(--texto-suave); font-size: 14px; }
+
+    /* ============ RODAPÉ ============ */
+    footer {
+      border-top: 1px solid rgba(0,230,118,.15);
+      padding: 34px 20px; text-align: center;
+      color: var(--texto-suave); font-size: 14px;
+    }
+    footer .coracao { color: var(--verde); }
+  </style>
+</head>
+<body>
+
+  <!-- ======================= CABEÇALHO ======================= -->
+  <header>
+    <div class="barra">
+      <div class="logo">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 L4 14 h6 l-1 8 9-12 h-6 z" fill="currentColor"/></svg>
+        Speed<span class="x">x</span>
+      </div>
+      <nav>
+        <a href="#passageiro">Passageiro</a>
+        <a href="#motorista">Motorista</a>
+        <a href="#como-funciona">Como funciona</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ======================= HERÓI ======================= -->
+  <section class="heroi">
+    <h1>Vá a qualquer lugar com o Speed<span class="x">x</span></h1>
+    <p class="sub">
+      Mobilidade urbana em alta velocidade. Nascido em Teotônio Vilela/AL —
+      pronto para levar você em qualquer parte do planeta. 🌍
+    </p>
+    <div class="acoes">
+      <a class="btn primario" href="/passageiro/">🚗 Pedir uma corrida</a>
+      <a class="btn vazado" href="/motorista/">💰 Dirigir e faturar</a>
+    </div>
+  </section>
+
+  <!-- ======================= OS DOIS APPS ======================= -->
+  <section class="apps container">
+    <div class="grade">
+
+      <!-- CARTÃO DO PASSAGEIRO -->
+      <div class="cartao" id="passageiro">
+        <div class="icone verde">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 L4 14 h6 l-1 8 9-12 h-6 z" fill="currentColor"/></svg>
+        </div>
+        <h2>Speedx Passageiro</h2>
+        <p>Peça uma corrida e veja o carro vindo até você em tempo real.</p>
+        <ul>
+          <li>Motoristas próximos no mapa ao vivo</li>
+          <li>Preço estimado antes de confirmar</li>
+          <li>Toque no destino e pronto</li>
+        </ul>
+        <div class="botoes">
+          <a class="btn primario" href="https://github.com/jardeltecnologia-sys/Speedx/releases/latest/download/speedx-passageiro.apk">📥 Baixar APK</a>
+          <a class="btn vazado" href="/passageiro/">🌐 Usar no navegador</a>
+        </div>
+        <div class="qr">
+          <img alt="QR Code do app do passageiro"
+               src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https%3A%2F%2Fgithub.com%2Fjardeltecnologia-sys%2FSpeedx%2Freleases%2Flatest%2Fdownload%2Fspeedx-passageiro.apk" />
+          <span>Aponte a câmera do celular para baixar o app do passageiro</span>
+        </div>
+      </div>
+
+      <!-- CARTÃO DO MOTORISTA -->
+      <div class="cartao" id="motorista">
+        <div class="icone escuro">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 L4 14 h6 l-1 8 9-12 h-6 z" fill="currentColor"/></svg>
+        </div>
+        <h2>Speedx Motorista</h2>
+        <p>Dirija quando quiser e ganhe de acordo com as suas metas.</p>
+        <ul>
+          <li>Fique online com um toque</li>
+          <li>Chamados na tela: aceite ou recuse, você decide</li>
+          <li>Veja o valor da corrida antes de aceitar</li>
+        </ul>
+        <div class="botoes">
+          <a class="btn primario" href="https://github.com/jardeltecnologia-sys/Speedx/releases/latest/download/speedx-motorista.apk">📥 Baixar APK</a>
+          <a class="btn vazado" href="/motorista/">🌐 Usar no navegador</a>
+        </div>
+        <div class="qr">
+          <img alt="QR Code do app do motorista"
+               src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https%3A%2F%2Fgithub.com%2Fjardeltecnologia-sys%2FSpeedx%2Freleases%2Flatest%2Fdownload%2Fspeedx-motorista.apk" />
+          <span>Aponte a câmera do celular para baixar o app do motorista</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ======================= COMO FUNCIONA ======================= -->
+  <section class="como container" id="como-funciona">
+    <h2>Como funciona</h2>
+    <div class="passos">
+      <div class="passo">
+        <div class="numero">1</div>
+        <h3>Marque o destino</h3>
+        <p>Abra o app, toque no mapa e veja o preço estimado na hora.</p>
+      </div>
+      <div class="passo">
+        <div class="numero">2</div>
+        <h3>O chamado voa</h3>
+        <p>O motorista mais próximo recebe o chamado e tem 20 segundos para aceitar.</p>
+      </div>
+      <div class="passo">
+        <div class="numero">3</div>
+        <h3>Acompanhe ao vivo</h3>
+        <p>Veja o carro se movendo no mapa em tempo real até chegar a você.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= RODAPÉ ======================= -->
+  <footer>
+    Feito com <span class="coracao">💚</span> em Teotônio Vilela, Alagoas — para o planeta inteiro.
+    <br />Speedx © 2026
+  </footer>
+
+</body>
+</html>

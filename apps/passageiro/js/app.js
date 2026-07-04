@@ -124,6 +124,94 @@ function definirStatus(texto, online) {
 }
 
 // -----------------------------------------------------------------------------
+// 3.5. A CORRIDA - escolher destino, pedir, acompanhar e cancelar
+// -----------------------------------------------------------------------------
+// A mesma tarifa do servidor, para MOSTRAR a estimativa antes de pedir.
+// (O servidor recalcula na hora do pedido — o app nunca dita o preço.)
+const TARIFA_BASE = 3.00, TARIFA_POR_KM = 2.00, TARIFA_MINIMA = 5.00;
+
+function distanciaKmEntre(lat1, lng1, lat2, lng2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function precoEstimado(km) {
+  return Math.max(TARIFA_MINIMA, Math.round((TARIFA_BASE + km * TARIFA_POR_KM) * 100) / 100);
+}
+
+// Estado da corrida no app:
+//   'livre'      -> pode escolher destino e pedir
+//   'procurando' -> pedido enviado, aguardando motorista aceitar
+//   'a_caminho'  -> motorista aceitou e está vindo
+let estadoCorrida = 'livre';
+let corridaAtualId = null;
+let destino = null;
+let marcadorDestino = null;
+
+const iconeDestino = L.divIcon({ className: '', html: '<div class="marcador-emoji">🎯</div>', iconSize: [30, 30], iconAnchor: [15, 15] });
+const btnCorrida = document.getElementById('btn-corrida');
+const dicaCorrida = document.getElementById('dica-corrida');
+
+function definirDica(texto, destaque) {
+  dicaCorrida.textContent = texto;
+  dicaCorrida.classList.toggle('destaque', !!destaque);
+}
+
+// TOQUE NO MAPA = escolher o destino (só quando não há corrida em andamento)
+mapa.on('click', (evento) => {
+  if (estadoCorrida !== 'livre') return;
+
+  destino = { latitude: evento.latlng.lat, longitude: evento.latlng.lng };
+  if (marcadorDestino) marcadorDestino.setLatLng(evento.latlng);
+  else marcadorDestino = L.marker(evento.latlng, { icon: iconeDestino }).addTo(mapa);
+
+  // Mostra o botão já com o preço estimado da viagem
+  const km = distanciaKmEntre(minhaPosicao.latitude, minhaPosicao.longitude, destino.latitude, destino.longitude);
+  btnCorrida.textContent = `PEDIR CORRIDA • R$ ${precoEstimado(km).toFixed(2).replace('.', ',')}`;
+  btnCorrida.classList.remove('escondido', 'cancelar');
+  definirDica(`Viagem de ~${km.toFixed(1)} km. Toque de novo no mapa para mudar o destino.`);
+});
+
+// Volta o app ao estado inicial (mantendo ou não o destino escolhido)
+function reiniciarCorrida(manterDestino) {
+  estadoCorrida = 'livre';
+  corridaAtualId = null;
+  if (!manterDestino) {
+    destino = null;
+    if (marcadorDestino) { mapa.removeLayer(marcadorDestino); marcadorDestino = null; }
+    btnCorrida.classList.add('escondido');
+    definirDica('Toque no mapa para marcar o seu destino 🎯');
+  } else if (destino) {
+    const km = distanciaKmEntre(minhaPosicao.latitude, minhaPosicao.longitude, destino.latitude, destino.longitude);
+    btnCorrida.textContent = `PEDIR CORRIDA • R$ ${precoEstimado(km).toFixed(2).replace('.', ',')}`;
+    btnCorrida.classList.remove('cancelar', 'escondido');
+  }
+}
+
+// O BOTÃO: pede a corrida (estado livre) ou cancela (qualquer outro estado)
+btnCorrida.addEventListener('click', () => {
+  if (!socket || !socket.connected) return definirDica('Sem conexão com o servidor ⚙️');
+
+  if (estadoCorrida === 'livre') {
+    if (!destino) return;
+    socket.emit('corrida:pedir', { origem: minhaPosicao, destino });
+    estadoCorrida = 'procurando';
+    btnCorrida.textContent = 'CANCELAR';
+    btnCorrida.classList.add('cancelar');
+    definirDica('Procurando um motorista para você... 🔎', true);
+  } else {
+    socket.emit('corrida:cancelar', { corridaId: corridaAtualId });
+    reiniciarCorrida(true);
+    definirDica('Corrida cancelada.');
+  }
+});
+
+// -----------------------------------------------------------------------------
 // 4. CONEXÃO EM TEMPO REAL (Socket.io)
 // -----------------------------------------------------------------------------
 let socket = null;
@@ -155,6 +243,40 @@ function conectar() {
 
   // Motorista fechou o app: some do mapa na hora
   socket.on('motorista:offline', (dados) => removerMotorista(dados.motoristaId));
+
+  // ------------------------- EVENTOS DA CORRIDA -------------------------
+
+  // O servidor confirmou o pedido e está oferecendo aos motoristas
+  socket.on('corrida:procurando', (dados) => {
+    corridaAtualId = dados.corridaId;
+    definirDica(`Procurando motorista... R$ ${dados.valorEstimado.toFixed(2).replace('.', ',')} (${dados.motoristasNaFila} na área) 🔎`, true);
+  });
+
+  // Um motorista ACEITOU: ele está vindo até você!
+  socket.on('corrida:aceita', (dados) => {
+    estadoCorrida = 'a_caminho';
+    btnCorrida.textContent = 'CANCELAR CORRIDA';
+    btnCorrida.classList.add('cancelar');
+    definirDica(`🚗 Motorista a caminho! Valor: R$ ${dados.valorEstimado.toFixed(2).replace('.', ',')}`, true);
+  });
+
+  // Nenhum motorista topou/estava livre
+  socket.on('corrida:sem_motorista', (dados) => {
+    reiniciarCorrida(true);
+    definirDica(dados.mensagem + ' 😞');
+  });
+
+  // Chegou ao destino: viagem concluída
+  socket.on('corrida:finalizada', (dados) => {
+    reiniciarCorrida(false);
+    definirDica(`🏁 ${dados.mensagem} Valor: R$ ${dados.valorEstimado.toFixed(2).replace('.', ',')}`, true);
+  });
+
+  // Motorista caiu/cancelou no meio do caminho
+  socket.on('corrida:cancelada', (dados) => {
+    reiniciarCorrida(true);
+    definirDica(dados.mensagem);
+  });
 
   socket.on('disconnect', () => definirStatus('Sem conexão — tentando de novo...', false));
   socket.on('connect_error', () => definirStatus('Servidor fora de alcance. Verifique ⚙️', false));
@@ -213,4 +335,13 @@ document.getElementById('btn-salvar').addEventListener('click', () => {
   marcadorVoce = L.marker([minhaPosicao.latitude, minhaPosicao.longitude], { icon: iconeVoce }).addTo(mapa);
 
   conectar();
+
+  // PWA: registra o Service Worker (só na versão WEB — dentro do APK o
+  // Capacitor já cuida dos arquivos locais, o SW seria redundante)
+  const ehNativo = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+  if ('serviceWorker' in navigator && !ehNativo) {
+    navigator.serviceWorker.register('sw.js').catch((erro) =>
+      console.warn('Service Worker não registrado:', erro.message)
+    );
+  }
 })();
