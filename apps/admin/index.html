@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<!-- ==========================================================================
+  SPEEDX ADMIN — Central de operação (v1 visual)
+  Métricas REAIS (frota online, corridas ativas, saúde da API ao vivo).
+  Áreas profundas marcadas honestamente como "preparadas" para as fases 3–5.
+=========================================================================== -->
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#FFFFFF" />
+  <title>Speedx Admin — Central de operação</title>
+  <link rel="icon" href="../icone-64.png" onerror="" />
+
+  <link rel="stylesheet" href="css/tokens.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="stylesheet" href="css/admin.css" />
+</head>
+<body>
+
+  <div class="admin-shell">
+
+    <!-- ============================ SIDEBAR ============================= -->
+    <aside class="sidebar" aria-label="Navegação administrativa">
+      <a class="sidebar__brand" href="/">
+        <svg class="brand__bolt" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 L4 14 h6 l-1 8 9-12 h-6 z" fill="currentColor"/></svg>
+        <span>Speed<span class="sidebar__x">x</span> <small>Admin</small></span>
+      </a>
+
+      <nav class="sidebar__nav">
+        <button class="sidebar__item sidebar__item--ativo" data-area="visao">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+          Visão geral
+        </button>
+        <button class="sidebar__item" data-area="corridas">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+          Corridas
+        </button>
+        <button class="sidebar__item" data-area="motoristas">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11 6.5 6.5A2 2 0 0 1 8.4 5h7.2a2 2 0 0 1 1.9 1.5L19 11"/><path d="M4 11h16a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1h-1"/><path d="M3 12v4a1 1 0 0 0 1 1h1"/><circle cx="7.5" cy="17" r="1.8"/><circle cx="16.5" cy="17" r="1.8"/></svg>
+          Motoristas
+        </button>
+        <button class="sidebar__item" data-area="passageiros">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/></svg>
+          Passageiros
+        </button>
+        <button class="sidebar__item" data-area="financeiro">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M3 10h18"/><circle cx="12" cy="15" r="2"/></svg>
+          Financeiro
+        </button>
+        <button class="sidebar__item" data-area="seguranca">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4 6v6c0 4.4 3.4 8.4 8 9 4.6-.6 8-4.6 8-9V6z"/><path d="m9 12 2 2 4-4"/></svg>
+          Segurança
+        </button>
+        <button class="sidebar__item" data-area="suporte">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 0-9 9"/><path d="M9 10h.01M15 10h.01"/><path d="M9.5 15a4.5 4.5 0 0 0 5 0"/></svg>
+          Suporte
+        </button>
+        <button class="sidebar__item" data-area="config">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3M4.9 4.9l2.1 2.1m10 10 2.1 2.1M19.1 4.9l-2.1 2.1m-10 10-2.1 2.1"/></svg>
+          Configurações
+        </button>
+        <button class="sidebar__item" data-area="sistema">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M22 12h-4l-3 8-6-16-3 8H2"/></svg>
+          Sistema
+        </button>
+      </nav>
+
+      <div class="sidebar__base">
+        <span id="admin-status" class="status-pill status-pill--busy">
+          <span class="status-pill__dot"></span>
+          <span id="admin-status-texto">Verificando</span>
+        </span>
+      </div>
+    </aside>
+
+    <!-- ============================ CONTEÚDO ============================ -->
+    <main class="conteudo">
+
+      <!-- ÁREA: VISÃO GERAL -->
+      <section id="area-visao" class="area">
+        <header class="area__cabeca">
+          <div>
+            <h1>Visão geral</h1>
+            <p class="area__sub">Operação Speedx em tempo real · atualiza a cada 10 segundos</p>
+          </div>
+          <span class="badge badge--success">Ao vivo</span>
+        </header>
+
+        <div class="metric-grid">
+          <div class="card stat-card">
+            <span class="stat-card__label">Motoristas online</span>
+            <span class="stat-card__value" id="mv-motoristas">—</span>
+            <span class="stat-card__hint">No mapa agora (Redis GEO)</span>
+          </div>
+          <div class="card stat-card">
+            <span class="stat-card__label">Passageiros conectados</span>
+            <span class="stat-card__value" id="mv-passageiros">—</span>
+            <span class="stat-card__hint">Sessões ativas no tempo real</span>
+          </div>
+          <div class="card stat-card">
+            <span class="stat-card__label">Corridas em andamento</span>
+            <span class="stat-card__value" id="mv-corridas">—</span>
+            <span class="stat-card__hint">Procurando ou em viagem</span>
+          </div>
+          <div class="card stat-card">
+            <span class="stat-card__label">Receita estimada</span>
+            <span class="stat-card__value">R$ —</span>
+            <span class="stat-card__hint">Disponível com o ledger (Fase 4)</span>
+          </div>
+        </div>
+
+        <div class="paineis-grid">
+          <div class="card card--pad">
+            <h2 class="painel__titulo">Saúde da plataforma</h2>
+            <div class="saude" id="saude-lista">
+              <div class="saude__item"><span>API</span><span class="badge" id="s-api">—</span></div>
+              <div class="saude__item"><span>PostgreSQL</span><span class="badge" id="s-pg">—</span></div>
+              <div class="saude__item"><span>Redis</span><span class="badge" id="s-redis">—</span></div>
+            </div>
+            <p class="painel__nota" id="saude-hora">—</p>
+          </div>
+
+          <div class="card card--pad">
+            <h2 class="painel__titulo">Alertas</h2>
+            <div class="empty-state" style="padding: var(--sp-6);">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.8 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.8a2 2 0 0 0-3.4 0z"/></svg>
+              <p class="empty-state__title">Nenhum alerta ativo</p>
+              <p class="empty-state__text">Alertas de operação e antifraude chegam com a Fase 6.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ÁREA: CORRIDAS -->
+      <section id="area-corridas" class="area escondido">
+        <header class="area__cabeca"><div><h1>Corridas</h1><p class="area__sub">Monitoramento e histórico de viagens</p></div></header>
+        <div class="card card--pad">
+          <table class="data-table">
+            <thead><tr><th>Corrida</th><th>Estado</th><th>Valor</th><th>Quando</th></tr></thead>
+            <tbody id="tabela-corridas">
+              <tr><td colspan="4">
+                <div class="empty-state">
+                  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+                  <p class="empty-state__title">Histórico permanente na Fase 3</p>
+                  <p class="empty-state__text">Quando as corridas passarem a ser gravadas no PostgreSQL, esta tabela mostra cada viagem com estado, valores e trilha completa. O contador de corridas ativas ao vivo já funciona na Visão geral.</p>
+                </div>
+              </td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ÁREA: MOTORISTAS -->
+      <section id="area-motoristas" class="area escondido">
+        <header class="area__cabeca"><div><h1>Motoristas</h1><p class="area__sub">Frota, documentos e aprovações</p></div></header>
+        <div class="metric-grid" style="margin-bottom: var(--sp-5);">
+          <div class="card stat-card">
+            <span class="stat-card__label">Online agora</span>
+            <span class="stat-card__value" id="mot-online">—</span>
+            <span class="stat-card__hint">Dado real, ao vivo</span>
+          </div>
+          <div class="card stat-card">
+            <span class="stat-card__label">Aguardando aprovação</span>
+            <span class="stat-card__value">—</span>
+            <span class="stat-card__hint">KYC/documentos na Fase 5</span>
+          </div>
+        </div>
+        <div class="card empty-state">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11 6.5 6.5A2 2 0 0 1 8.4 5h7.2a2 2 0 0 1 1.9 1.5L19 11"/><path d="M4 11h16a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1h-1"/><path d="M3 12v4a1 1 0 0 0 1 1h1"/><circle cx="7.5" cy="17" r="1.8"/><circle cx="16.5" cy="17" r="1.8"/></svg>
+          <p class="empty-state__title">Cadastro de motoristas na Fase 3</p>
+          <p class="empty-state__text">Com contas reais, esta área lista cada motorista com documentos (CNH com EAR), veículo, avaliação e ações de aprovação/bloqueio.</p>
+        </div>
+      </section>
+
+      <!-- ÁREA: PASSAGEIROS -->
+      <section id="area-passageiros" class="area escondido">
+        <header class="area__cabeca"><div><h1>Passageiros</h1><p class="area__sub">Base de usuários da plataforma</p></div></header>
+        <div class="card empty-state">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/></svg>
+          <p class="empty-state__title">Contas de passageiros na Fase 3</p>
+          <p class="empty-state__text">Cadastro com telefone validado, histórico de viagens e ferramentas de atendimento chegam com a autenticação.</p>
+        </div>
+      </section>
+
+      <!-- ÁREA: FINANCEIRO -->
+      <section id="area-financeiro" class="area escondido">
+        <header class="area__cabeca">
+          <div><h1>Financeiro</h1><p class="area__sub">Pix, carteira e repasses</p></div>
+          <span class="badge badge--info">Preparado para a Fase 4</span>
+        </header>
+        <div class="card empty-state">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M3 10h18"/><circle cx="12" cy="15" r="2"/></svg>
+          <p class="empty-state__title">Nenhum dinheiro simulado aqui</p>
+          <p class="empty-state__text">Esta área ganha vida na Fase 4 com Pix, carteira do motorista, comissão da plataforma e livro-caixa imutável. Números só quando forem reais.</p>
+        </div>
+      </section>
+
+      <!-- ÁREA: SEGURANÇA -->
+      <section id="area-seguranca" class="area escondido">
+        <header class="area__cabeca"><div><h1>Segurança</h1><p class="area__sub">Denúncias, incidentes e antifraude</p></div></header>
+        <div class="card empty-state">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4 6v6c0 4.4 3.4 8.4 8 9 4.6-.6 8-4.6 8-9V6z"/><path d="m9 12 2 2 4-4"/></svg>
+          <p class="empty-state__title">Central de segurança na Fase 6</p>
+          <p class="empty-state__text">PIN de embarque, detecção de desvio de rota, botão de emergência e trilha de auditoria — tudo no roteiro oficial.</p>
+        </div>
+      </section>
+
+      <!-- ÁREA: SUPORTE -->
+      <section id="area-suporte" class="area escondido">
+        <header class="area__cabeca"><div><h1>Suporte</h1><p class="area__sub">Tickets e atendimento</p></div></header>
+        <div class="card empty-state">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 0-9 9"/><path d="M9 10h.01M15 10h.01"/><path d="M9.5 15a4.5 4.5 0 0 0 5 0"/></svg>
+          <p class="empty-state__title">Central de suporte na Fase 6</p>
+          <p class="empty-state__text">Tickets de passageiros e motoristas, disputas de corrida e reembolsos serão tratados aqui.</p>
+        </div>
+      </section>
+
+      <!-- ÁREA: CONFIGURAÇÕES -->
+      <section id="area-config" class="area escondido">
+        <header class="area__cabeca"><div><h1>Configurações</h1><p class="area__sub">Tarifas, zonas e regras da operação</p></div></header>
+        <div class="card card--pad" style="margin-bottom: var(--sp-4);">
+          <h2 class="painel__titulo">Tarifa vigente (leitura)</h2>
+          <table class="data-table">
+            <tbody>
+              <tr><td>Bandeirada</td><td style="text-align:right; font-weight:600;">R$ 3,00</td></tr>
+              <tr><td>Por quilômetro</td><td style="text-align:right; font-weight:600;">R$ 2,00</td></tr>
+              <tr><td>Corrida mínima</td><td style="text-align:right; font-weight:600;">R$ 5,00</td></tr>
+              <tr><td>Prazo do chamado</td><td style="text-align:right; font-weight:600;">20 segundos</td></tr>
+              <tr><td>Raio de busca</td><td style="text-align:right; font-weight:600;">10 km</td></tr>
+            </tbody>
+          </table>
+          <p class="painel__nota">Edição de tarifas pelo painel chega com o Painel Admin completo (Fase 5).</p>
+        </div>
+      </section>
+
+      <!-- ÁREA: SISTEMA -->
+      <section id="area-sistema" class="area escondido">
+        <header class="area__cabeca"><div><h1>Sistema</h1><p class="area__sub">Infraestrutura e serviços</p></div></header>
+        <div class="card card--pad">
+          <table class="data-table">
+            <tbody>
+              <tr><td>Domínio</td><td style="text-align:right;">speedx.titanhost.cloud</td></tr>
+              <tr><td>API</td><td style="text-align:right;" id="sis-api">—</td></tr>
+              <tr><td>PostgreSQL</td><td style="text-align:right;" id="sis-pg">—</td></tr>
+              <tr><td>Redis</td><td style="text-align:right;" id="sis-redis">—</td></tr>
+              <tr><td>Última verificação</td><td style="text-align:right;" id="sis-hora">—</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="js/admin.js"></script>
+</body>
+</html>

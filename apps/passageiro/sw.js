@@ -10,12 +10,14 @@
 // =============================================================================
 
 // Mude a versão quando os arquivos do app mudarem: o navegador troca o cache
-const CACHE = 'speedx-passageiro-v1';
+const CACHE = 'speedx-passageiro-v2';
 
 // Tudo que o app precisa para ABRIR (o "esqueleto" do aplicativo)
 const ARQUIVOS_DO_APP = [
   './',
   'index.html',
+  'css/tokens.css',
+  'css/components.css',
   'css/app.css',
   'js/app.js',
   'vendor/leaflet.js',

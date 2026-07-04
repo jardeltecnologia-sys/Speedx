@@ -1,270 +1,381 @@
 <!DOCTYPE html>
-<!-- ============================================================================
-  SPEEDX - PÁGINA INSTITUCIONAL
-  ============================================================================
-  A vitrine mundial do Speedx, servida na RAIZ do servidor (a "casa" na VPS).
-  Daqui, qualquer pessoa do planeta pode:
-    - Usar os apps direto no navegador (PWA instalável)
-    - Baixar os APKs Android (links da aba Releases do GitHub)
-  Estrutura inspirada nos grandes apps de mobilidade: herói forte, uma seção
-  para passageiros, uma para motoristas e o passo a passo de como funciona.
-============================================================================ -->
+<!-- ==========================================================================
+  SPEEDX — PÁGINA INSTITUCIONAL v2 (Design System Speedx)
+  A vitrine mundial da plataforma, servida na raiz da VPS.
+=========================================================================== -->
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#00E676" />
-  <meta name="description" content="Speedx — mobilidade urbana em alta velocidade. Peça corridas ou dirija e fature. Nascido em Teotônio Vilela/AL, pronto para o mundo." />
-  <title>Speedx — Vá a qualquer lugar</title>
+  <meta name="theme-color" content="#FFFFFF" />
+  <meta name="description" content="Speedx — mobilidade inteligente para cidades reais. Peça corridas em tempo real ou dirija e fature. Plataforma completa: apps, operação e administração." />
+  <title>Speedx — Mobilidade inteligente para cidades reais</title>
   <link rel="icon" href="icone-64.png" />
 
-  <style>
-    /* ============ IDENTIDADE SPEEDX: verde vibrante + tema escuro ============ */
-    :root {
-      --verde: #00E676;
-      --verde-escuro: #00B25C;
-      --fundo: #0B0F0E;
-      --painel: #141A18;
-      --texto: #F2F7F4;
-      --texto-suave: #9DB0A6;
-    }
-
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    html { scroll-behavior: smooth; }
-
-    body {
-      font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
-      background: var(--fundo);
-      color: var(--texto);
-      line-height: 1.6;
-    }
-
-    .container { max-width: 1080px; margin: 0 auto; padding: 0 20px; }
-
-    /* ============ CABEÇALHO ============ */
-    header {
-      position: sticky; top: 0; z-index: 100;
-      background: rgba(11,15,14,.92);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid rgba(0,230,118,.15);
-    }
-    .barra {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 14px 20px; max-width: 1080px; margin: 0 auto;
-    }
-    .logo { display: flex; align-items: center; gap: 8px; font-size: 24px; font-weight: 800; }
-    .logo svg { width: 28px; height: 28px; color: var(--verde); }
-    .logo .x { color: var(--verde); }
-    nav a {
-      color: var(--texto-suave); text-decoration: none; margin-left: 22px;
-      font-size: 15px; font-weight: 600;
-    }
-    nav a:hover { color: var(--verde); }
-
-    /* ============ HERÓI ============ */
-    .heroi {
-      padding: 90px 20px 70px;
-      text-align: center;
-      background:
-        radial-gradient(ellipse at 50% -20%, rgba(0,230,118,.18), transparent 60%),
-        var(--fundo);
-    }
-    .heroi h1 { font-size: clamp(34px, 6vw, 58px); font-weight: 900; letter-spacing: -1px; }
-    .heroi h1 .x { color: var(--verde); }
-    .heroi p.sub {
-      color: var(--texto-suave); font-size: clamp(16px, 2.5vw, 20px);
-      max-width: 640px; margin: 18px auto 34px;
-    }
-    .heroi .acoes { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
-
-    .btn {
-      display: inline-block; text-decoration: none; cursor: pointer;
-      padding: 16px 28px; border-radius: 14px;
-      font-size: 16px; font-weight: 800; letter-spacing: .3px;
-      transition: transform .15s ease, box-shadow .15s ease;
-    }
-    .btn:active { transform: scale(.97); }
-    .btn.primario {
-      background: var(--verde); color: #05130C;
-      box-shadow: 0 8px 30px rgba(0,230,118,.35);
-    }
-    .btn.primario:hover { background: var(--verde-escuro); }
-    .btn.vazado {
-      background: transparent; color: var(--verde);
-      border: 2px solid var(--verde);
-    }
-    .btn.vazado:hover { background: rgba(0,230,118,.08); }
-
-    /* ============ CARTÕES PASSAGEIRO / MOTORISTA ============ */
-    .apps { padding: 30px 0 10px; }
-    .grade {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 22px; margin-top: 10px;
-    }
-    .cartao {
-      background: var(--painel);
-      border: 1px solid rgba(0,230,118,.18);
-      border-radius: 22px;
-      padding: 30px;
-    }
-    .cartao .icone {
-      width: 64px; height: 64px; border-radius: 18px;
-      display: flex; align-items: center; justify-content: center;
-      margin-bottom: 18px;
-    }
-    .cartao .icone svg { width: 34px; height: 34px; }
-    .icone.verde { background: var(--verde); color: #05130C; }
-    .icone.escuro { background: #05130C; color: var(--verde); border: 1px solid rgba(0,230,118,.35); }
-    .cartao h2 { font-size: 26px; margin-bottom: 8px; }
-    .cartao p { color: var(--texto-suave); font-size: 15px; margin-bottom: 20px; }
-    .cartao ul { list-style: none; margin-bottom: 24px; }
-    .cartao li { color: var(--texto); font-size: 15px; padding: 5px 0; }
-    .cartao li::before { content: "✔ "; color: var(--verde); font-weight: 800; }
-    .cartao .botoes { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; }
-    .cartao .botoes .btn { padding: 13px 20px; font-size: 14px; }
-
-    /* QR code para baixar no celular apontando a câmera */
-    .qr {
-      display: flex; align-items: center; gap: 14px;
-      background: rgba(0,0,0,.25); border-radius: 14px; padding: 12px 16px;
-    }
-    .qr img { width: 92px; height: 92px; border-radius: 8px; background: #fff; padding: 4px; }
-    .qr span { color: var(--texto-suave); font-size: 13px; }
-
-    /* ============ COMO FUNCIONA ============ */
-    .como { padding: 70px 0; text-align: center; }
-    .como h2 { font-size: 32px; margin-bottom: 40px; }
-    .passos { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
-    .passo { background: var(--painel); border-radius: 18px; padding: 26px; border: 1px solid rgba(255,255,255,.06); }
-    .passo .numero {
-      width: 44px; height: 44px; margin: 0 auto 14px;
-      background: var(--verde); color: #05130C;
-      border-radius: 50%; display: flex; align-items: center; justify-content: center;
-      font-weight: 900; font-size: 20px;
-    }
-    .passo h3 { font-size: 18px; margin-bottom: 6px; }
-    .passo p { color: var(--texto-suave); font-size: 14px; }
-
-    /* ============ RODAPÉ ============ */
-    footer {
-      border-top: 1px solid rgba(0,230,118,.15);
-      padding: 34px 20px; text-align: center;
-      color: var(--texto-suave); font-size: 14px;
-    }
-    footer .coracao { color: var(--verde); }
-  </style>
+  <link rel="stylesheet" href="css/tokens.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="stylesheet" href="css/site.css" />
 </head>
 <body>
 
-  <!-- ======================= CABEÇALHO ======================= -->
-  <header>
-    <div class="barra">
-      <div class="logo">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 L4 14 h6 l-1 8 9-12 h-6 z" fill="currentColor"/></svg>
-        Speed<span class="x">x</span>
-      </div>
-      <nav>
+  <!-- ============================== HEADER ============================== -->
+  <header class="site-header">
+    <div class="site-header__bar">
+      <a class="brand" href="/" aria-label="Speedx — página inicial">
+        <svg class="brand__bolt" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M13 2 L4 14 h6 l-1 8 9-12 h-6 z" fill="currentColor"/>
+        </svg>
+        <span class="brand__name">Speed<span class="brand__x">x</span></span>
+      </a>
+
+      <nav class="site-nav" aria-label="Navegação do site">
+        <a href="#produto">Produto</a>
         <a href="#passageiro">Passageiro</a>
         <a href="#motorista">Motorista</a>
-        <a href="#como-funciona">Como funciona</a>
+        <a href="#seguranca">Segurança</a>
+        <a href="/admin/">Administração</a>
+        <a href="#baixar">Baixar apps</a>
       </nav>
+
+      <div class="site-header__cta">
+        <a class="btn btn--primary" href="/passageiro/">Pedir corrida</a>
+      </div>
     </div>
   </header>
 
-  <!-- ======================= HERÓI ======================= -->
-  <section class="heroi">
-    <h1>Vá a qualquer lugar com o Speed<span class="x">x</span></h1>
-    <p class="sub">
-      Mobilidade urbana em alta velocidade. Nascido em Teotônio Vilela/AL —
-      pronto para levar você em qualquer parte do planeta. 🌍
-    </p>
-    <div class="acoes">
-      <a class="btn primario" href="/passageiro/">🚗 Pedir uma corrida</a>
-      <a class="btn vazado" href="/motorista/">💰 Dirigir e faturar</a>
-    </div>
-  </section>
-
-  <!-- ======================= OS DOIS APPS ======================= -->
-  <section class="apps container">
-    <div class="grade">
-
-      <!-- CARTÃO DO PASSAGEIRO -->
-      <div class="cartao" id="passageiro">
-        <div class="icone verde">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 L4 14 h6 l-1 8 9-12 h-6 z" fill="currentColor"/></svg>
-        </div>
-        <h2>Speedx Passageiro</h2>
-        <p>Peça uma corrida e veja o carro vindo até você em tempo real.</p>
-        <ul>
-          <li>Motoristas próximos no mapa ao vivo</li>
-          <li>Preço estimado antes de confirmar</li>
-          <li>Toque no destino e pronto</li>
-        </ul>
-        <div class="botoes">
-          <a class="btn primario" href="https://github.com/jardeltecnologia-sys/Speedx/releases/latest/download/speedx-passageiro.apk">📥 Baixar APK</a>
-          <a class="btn vazado" href="/passageiro/">🌐 Usar no navegador</a>
-        </div>
-        <div class="qr">
-          <img alt="QR Code do app do passageiro"
-               src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https%3A%2F%2Fgithub.com%2Fjardeltecnologia-sys%2FSpeedx%2Freleases%2Flatest%2Fdownload%2Fspeedx-passageiro.apk" />
-          <span>Aponte a câmera do celular para baixar o app do passageiro</span>
-        </div>
+  <!-- =============================== HERO =============================== -->
+  <section class="hero" id="produto">
+    <div class="container">
+      <span class="badge badge--success hero__badge">Plataforma em operação · Teotônio Vilela/AL</span>
+      <h1>Mobilidade <span class="destaque">inteligente</span> para cidades reais</h1>
+      <p class="hero__sub">
+        O Speedx conecta passageiros e motoristas em tempo real, com preço claro
+        antes de confirmar e uma operação local que respeita a sua cidade.
+      </p>
+      <div class="hero__acoes">
+        <a class="btn btn--primary btn--lg" href="/passageiro/">Abrir Passageiro</a>
+        <a class="btn btn--secondary btn--lg" href="/motorista/">Abrir Motorista</a>
       </div>
-
-      <!-- CARTÃO DO MOTORISTA -->
-      <div class="cartao" id="motorista">
-        <div class="icone escuro">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 L4 14 h6 l-1 8 9-12 h-6 z" fill="currentColor"/></svg>
-        </div>
-        <h2>Speedx Motorista</h2>
-        <p>Dirija quando quiser e ganhe de acordo com as suas metas.</p>
-        <ul>
-          <li>Fique online com um toque</li>
-          <li>Chamados na tela: aceite ou recuse, você decide</li>
-          <li>Veja o valor da corrida antes de aceitar</li>
-        </ul>
-        <div class="botoes">
-          <a class="btn primario" href="https://github.com/jardeltecnologia-sys/Speedx/releases/latest/download/speedx-motorista.apk">📥 Baixar APK</a>
-          <a class="btn vazado" href="/motorista/">🌐 Usar no navegador</a>
-        </div>
-        <div class="qr">
-          <img alt="QR Code do app do motorista"
-               src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https%3A%2F%2Fgithub.com%2Fjardeltecnologia-sys%2FSpeedx%2Freleases%2Flatest%2Fdownload%2Fspeedx-motorista.apk" />
-          <span>Aponte a câmera do celular para baixar o app do motorista</span>
-        </div>
-      </div>
-
-    </div>
-  </section>
-
-  <!-- ======================= COMO FUNCIONA ======================= -->
-  <section class="como container" id="como-funciona">
-    <h2>Como funciona</h2>
-    <div class="passos">
-      <div class="passo">
-        <div class="numero">1</div>
-        <h3>Marque o destino</h3>
-        <p>Abra o app, toque no mapa e veja o preço estimado na hora.</p>
-      </div>
-      <div class="passo">
-        <div class="numero">2</div>
-        <h3>O chamado voa</h3>
-        <p>O motorista mais próximo recebe o chamado e tem 20 segundos para aceitar.</p>
-      </div>
-      <div class="passo">
-        <div class="numero">3</div>
-        <h3>Acompanhe ao vivo</h3>
-        <p>Veja o carro se movendo no mapa em tempo real até chegar a você.</p>
+      <div class="hero__downloads">
+        <a class="btn btn--soft" href="https://github.com/jardeltecnologia-sys/Speedx/releases/latest/download/speedx-passageiro.apk">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+          Baixar APK Passageiro
+        </a>
+        <a class="btn btn--soft" href="https://github.com/jardeltecnologia-sys/Speedx/releases/latest/download/speedx-motorista.apk">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+          Baixar APK Motorista
+        </a>
       </div>
     </div>
   </section>
 
-  <!-- ======================= RODAPÉ ======================= -->
-  <footer>
-    Feito com <span class="coracao">💚</span> em Teotônio Vilela, Alagoas — para o planeta inteiro.
-    <br />Speedx © 2026
+  <!-- ========================= CARDS DE CONFIANÇA ======================= -->
+  <section class="confianca" id="seguranca">
+    <div class="container">
+      <h2 class="secao-titulo">Feito para dar confiança</h2>
+      <p class="secao-sub">Tecnologia de plataforma grande, operação de cidade real.</p>
+
+      <div class="confianca__grid">
+        <div class="card confianca__item">
+          <span class="confianca__icone">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 3 14h7l-1 8 10-12h-7z"/></svg>
+          </span>
+          <div>
+            <p class="confianca__titulo">Tempo real de verdade</p>
+            <p class="confianca__texto">Posição dos carros atualizada segundo a segundo, do GPS do motorista à tela do passageiro.</p>
+          </div>
+        </div>
+
+        <div class="card confianca__item">
+          <span class="confianca__icone">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11 6.5 6.5A2 2 0 0 1 8.4 5h7.2a2 2 0 0 1 1.9 1.5L19 11"/><path d="M4 11h16a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1h-1"/><path d="M3 12v4a1 1 0 0 0 1 1h1"/><circle cx="7.5" cy="17" r="1.8"/><circle cx="16.5" cy="17" r="1.8"/></svg>
+          </span>
+          <div>
+            <p class="confianca__titulo">Motoristas online no mapa</p>
+            <p class="confianca__texto">Veja quem está por perto antes de pedir. O chamado vai sempre ao motorista mais próximo.</p>
+          </div>
+        </div>
+
+        <div class="card confianca__item">
+          <span class="confianca__icone">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M3 10h18"/><circle cx="12" cy="15" r="2"/></svg>
+          </span>
+          <div>
+            <p class="confianca__titulo">Pix em breve <span class="badge">Fase 4</span></p>
+            <p class="confianca__texto">Pagamento por Pix e carteira do motorista com repasse rápido estão no roteiro oficial.</p>
+          </div>
+        </div>
+
+        <div class="card confianca__item">
+          <span class="confianca__icone">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4 6v6c0 4.4 3.4 8.4 8 9 4.6-.6 8-4.6 8-9V6z"/><path d="m9 12 2 2 4-4"/></svg>
+          </span>
+          <div>
+            <p class="confianca__titulo">Segurança primeiro</p>
+            <p class="confianca__texto">Conexão criptografada (HTTPS), servidor protegido e recursos de segurança da viagem no roteiro.</p>
+          </div>
+        </div>
+
+        <div class="card confianca__item">
+          <span class="confianca__icone">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-9-9"/><path d="M21 3 12 12"/><path d="M16 3h5v5"/></svg>
+          </span>
+          <div>
+            <p class="confianca__titulo">Suporte local</p>
+            <p class="confianca__texto">Operação da região, para a região — sem robô do outro lado do mundo.</p>
+          </div>
+        </div>
+
+        <div class="card confianca__item">
+          <span class="confianca__icone">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+          </span>
+          <div>
+            <p class="confianca__titulo">Área administrativa</p>
+            <p class="confianca__texto">Central de operação com frota ao vivo, métricas e saúde do sistema.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================== OS DOIS APPS =========================== -->
+  <section class="apps-secao" id="baixar">
+    <div class="container">
+      <h2 class="secao-titulo">Dois aplicativos, uma plataforma</h2>
+      <p class="secao-sub">Use direto do navegador (instalável) ou baixe o APK Android.</p>
+
+      <div class="apps-grid">
+        <!-- PASSAGEIRO -->
+        <div class="card app-card" id="passageiro">
+          <div class="app-card__cabeca">
+            <span class="app-card__icone app-card__icone--verde">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 2 L4 14 h6 l-1 8 9-12 h-6 z"/></svg>
+            </span>
+            <div>
+              <h3>Speedx Passageiro</h3>
+              <span class="app-card__tag">Para quem vai</span>
+            </div>
+          </div>
+
+          <div class="mockup" aria-hidden="true">
+            <div class="mockup__tela">
+              <svg class="mockup__rota" viewBox="0 0 190 380" fill="none" aria-hidden="true">
+                <path d="M30 300 C 60 240, 130 250, 150 170 S 120 90, 95 60" stroke="#067647" stroke-width="4" stroke-linecap="round" stroke-dasharray="1 10"/>
+                <circle cx="30" cy="300" r="7" fill="#067647" stroke="#fff" stroke-width="3"/>
+                <circle cx="95" cy="60" r="7" fill="#101613" stroke="#fff" stroke-width="3"/>
+              </svg>
+              <div class="mockup__pill">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 L4 14 h6 l-1 8 9-12 h-6 z"/></svg>
+                Speedx
+              </div>
+              <div class="mockup__sheet">
+                <div class="mockup__linha"></div>
+                <div class="mockup__linha mockup__linha--60"></div>
+                <div class="mockup__botao">Pedir corrida</div>
+              </div>
+            </div>
+          </div>
+
+          <ul>
+            <li><svg class="icon icon--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg> Motoristas por perto no mapa, ao vivo</li>
+            <li><svg class="icon icon--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg> Preço estimado antes de confirmar</li>
+            <li><svg class="icon icon--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg> Acompanhe a chegada em tempo real</li>
+          </ul>
+
+          <div class="app-card__botoes">
+            <a class="btn btn--primary" href="/passageiro/">Usar no navegador</a>
+            <a class="btn btn--secondary" href="https://github.com/jardeltecnologia-sys/Speedx/releases/latest/download/speedx-passageiro.apk">Baixar APK</a>
+          </div>
+
+          <div class="app-card__qr">
+            <img alt="QR Code para baixar o app do passageiro"
+                 src="https://api.qrserver.com/v1/create-qr-code/?size=168x168&data=https%3A%2F%2Fgithub.com%2Fjardeltecnologia-sys%2FSpeedx%2Freleases%2Flatest%2Fdownload%2Fspeedx-passageiro.apk" />
+            <span>Aponte a câmera do celular para baixar o app do passageiro</span>
+          </div>
+        </div>
+
+        <!-- MOTORISTA -->
+        <div class="card app-card" id="motorista">
+          <div class="app-card__cabeca">
+            <span class="app-card__icone app-card__icone--escuro">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 2 L4 14 h6 l-1 8 9-12 h-6 z"/></svg>
+            </span>
+            <div>
+              <h3>Speedx Motorista</h3>
+              <span class="app-card__tag">Para quem fatura</span>
+            </div>
+          </div>
+
+          <div class="mockup" aria-hidden="true">
+            <div class="mockup__tela">
+              <svg class="mockup__rota" viewBox="0 0 190 380" fill="none" aria-hidden="true">
+                <circle cx="95" cy="170" r="34" stroke="#067647" stroke-width="3" opacity=".35"/>
+                <circle cx="95" cy="170" r="18" stroke="#067647" stroke-width="3" opacity=".6"/>
+                <circle cx="95" cy="170" r="7" fill="#067647" stroke="#fff" stroke-width="3"/>
+              </svg>
+              <div class="mockup__pill">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 L4 14 h6 l-1 8 9-12 h-6 z"/></svg>
+                Speedx · Online
+              </div>
+              <div class="mockup__sheet">
+                <div class="mockup__linha"></div>
+                <div class="mockup__linha mockup__linha--60"></div>
+                <div class="mockup__botao">Aceitar corrida</div>
+              </div>
+            </div>
+          </div>
+
+          <ul>
+            <li><svg class="icon icon--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg> Fique online com um toque</li>
+            <li><svg class="icon icon--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg> Valor e distância antes de aceitar — recusar é direito</li>
+            <li><svg class="icon icon--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg> Painel de ganhos do dia</li>
+          </ul>
+
+          <div class="app-card__botoes">
+            <a class="btn btn--primary" href="/motorista/">Usar no navegador</a>
+            <a class="btn btn--secondary" href="https://github.com/jardeltecnologia-sys/Speedx/releases/latest/download/speedx-motorista.apk">Baixar APK</a>
+          </div>
+
+          <div class="app-card__qr">
+            <img alt="QR Code para baixar o app do motorista"
+                 src="https://api.qrserver.com/v1/create-qr-code/?size=168x168&data=https%3A%2F%2Fgithub.com%2Fjardeltecnologia-sys%2FSpeedx%2Freleases%2Flatest%2Fdownload%2Fspeedx-motorista.apk" />
+            <span>Aponte a câmera do celular para baixar o app do motorista</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ COMO FUNCIONA ========================= -->
+  <section class="como">
+    <div class="container">
+      <h2 class="secao-titulo">Como funciona</h2>
+      <p class="secao-sub">Da solicitação à chegada, tudo registrado pela plataforma.</p>
+
+      <div class="como__grid">
+        <div class="card passo">
+          <span class="passo__num">1</span>
+          <h3>Passageiro solicita</h3>
+          <p>Marca o destino no mapa e vê o preço estimado antes de confirmar.</p>
+        </div>
+        <div class="card passo">
+          <span class="passo__num">2</span>
+          <h3>Motorista recebe</h3>
+          <p>O chamado chega ao motorista mais próximo, com valor e distância, e 20 segundos para decidir.</p>
+        </div>
+        <div class="card passo">
+          <span class="passo__num">3</span>
+          <h3>Corrida em tempo real</h3>
+          <p>Passageiro acompanha o carro chegando ao vivo, do aceite até o destino.</p>
+        </div>
+        <div class="card passo">
+          <span class="passo__num">4</span>
+          <h3>Plataforma registra</h3>
+          <p>Cada corrida é acompanhada pela central: estado, valores e operação sob controle.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================= MOTORISTAS =========================== -->
+  <section class="motoristas">
+    <div class="container">
+      <h2 class="secao-titulo">Dirija quando quiser. Fature na sua cidade.</h2>
+      <p class="secao-sub">O Speedx nasceu para valorizar quem dirige — com regras claras e operação local.</p>
+
+      <div class="motoristas__grid">
+        <div class="motoristas__item">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M3 10h18"/><circle cx="12" cy="15" r="2"/></svg>
+          <h3>Ganhos transparentes</h3>
+          <p>Veja o valor de cada corrida antes de aceitar. Painel com os ganhos do dia.</p>
+        </div>
+        <div class="motoristas__item">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          <h3>Autonomia total</h3>
+          <p>Online e offline com um toque. Aceitar ou recusar é decisão sua, sempre.</p>
+        </div>
+        <div class="motoristas__item">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 3 14h7l-1 8 10-12h-7z"/></svg>
+          <h3>Repasse rápido em breve</h3>
+          <p>Carteira do motorista com repasse via Pix está no roteiro oficial da plataforma.</p>
+        </div>
+        <div class="motoristas__item">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+          <h3>Operação local</h3>
+          <p>Plataforma da região: quem opera conhece as ruas — e conhece você.</p>
+        </div>
+      </div>
+
+      <div class="motoristas__cta">
+        <a class="btn btn--primary btn--lg" href="/motorista/">Começar a dirigir</a>
+        <a class="btn btn--secondary btn--lg" href="https://github.com/jardeltecnologia-sys/Speedx/releases/latest/download/speedx-motorista.apk">Baixar APK Motorista</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- =============================== FOOTER ============================= -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__grid">
+        <div>
+          <a class="brand" href="/" aria-label="Speedx">
+            <svg class="brand__bolt" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 L4 14 h6 l-1 8 9-12 h-6 z" fill="currentColor"/></svg>
+            <span class="brand__name">Speed<span class="brand__x">x</span></span>
+          </a>
+          <p style="margin-top: var(--sp-3); font-size: var(--fs-body-sm); color: var(--text-muted);">
+            Mobilidade inteligente para cidades reais.<br />Teotônio Vilela, Alagoas.
+          </p>
+        </div>
+
+        <div>
+          <h4>Plataforma</h4>
+          <ul>
+            <li><a href="/passageiro/">App do Passageiro</a></li>
+            <li><a href="/motorista/">App do Motorista</a></li>
+            <li><a href="/admin/">Administração</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4>Baixar</h4>
+          <ul>
+            <li><a href="https://github.com/jardeltecnologia-sys/Speedx/releases/latest/download/speedx-passageiro.apk">APK Passageiro</a></li>
+            <li><a href="https://github.com/jardeltecnologia-sys/Speedx/releases/latest/download/speedx-motorista.apk">APK Motorista</a></li>
+            <li><a href="https://github.com/jardeltecnologia-sys/Speedx/releases">Todas as versões</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4>Sistema</h4>
+          <span id="status-sistema" class="site-footer__status">
+            <span class="status-pill__dot"></span>
+            <span id="status-sistema-texto">Verificando status...</span>
+          </span>
+        </div>
+      </div>
+
+      <div class="site-footer__base">
+        <span>Speedx © 2026 — todos os direitos reservados.</span>
+        <span>Feito em Teotônio Vilela/AL, para o mundo.</span>
+      </div>
+    </div>
   </footer>
 
+  <script>
+    // Status do sistema no rodapé: consulta REAL ao /api/health
+    (async () => {
+      const el = document.getElementById('status-sistema');
+      const txt = document.getElementById('status-sistema-texto');
+      try {
+        const r = await (await fetch('/api/health')).json();
+        const ok = r.api === 'ok' && r.postgres === 'ok' && r.redis === 'ok';
+        el.classList.toggle('site-footer__status--ok', ok);
+        txt.textContent = ok ? 'Todos os sistemas operacionais' : 'Instabilidade em um dos serviços';
+      } catch {
+        txt.textContent = 'Status indisponível no momento';
+      }
+    })();
+  </script>
 </body>
 </html>

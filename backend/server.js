@@ -153,6 +153,7 @@ app.use((req, res, next) => {
 //   http://servidor/motorista   -> app do motorista
 app.use('/passageiro', express.static(path.join(__dirname, '..', 'apps', 'passageiro')));
 app.use('/motorista', express.static(path.join(__dirname, '..', 'apps', 'motorista')));
+app.use('/admin', express.static(path.join(__dirname, '..', 'apps', 'admin')));
 app.use('/', express.static(path.join(__dirname, '..', 'apps', 'site')));
 
 // -----------------------------------------------------------------------------
@@ -193,6 +194,26 @@ app.get('/api/health', async (req, res) => {
   // Status HTTP 200 se tudo ok, 503 (Serviço Indisponível) se algo caiu
   const tudoOk = saude.postgres === 'ok' && saude.redis === 'ok';
   res.status(tudoOk ? 200 : 503).json(saude);
+});
+
+// RESUMO DA OPERAÇÃO - alimenta o painel /admin com DADOS REAIS ao vivo.
+// Só contagens agregadas (nenhum dado pessoal); autenticação chega na Fase 3.
+app.get('/api/admin/resumo', async (req, res) => {
+  try {
+    const motoristasOnline = await redis.zCard(CHAVE_GEO_MOTORISTAS);
+    const passageirosConectados = io.sockets.adapter.rooms.get('sala:passageiros')?.size || 0;
+    const motoristasConectados = io.sockets.adapter.rooms.get('sala:motoristas')?.size || 0;
+    res.json({
+      motoristasOnline,
+      motoristasConectados,
+      passageirosConectados,
+      corridasAtivas: corridasAtivas.size,
+      horarioServidor: new Date().toISOString()
+    });
+  } catch (erro) {
+    console.error('❌ [Admin] Erro no resumo:', erro.message);
+    res.status(500).json({ erro: 'Erro ao montar o resumo da operação.' });
+  }
 });
 
 // ROTA DE BUSCA GEOESPACIAL - o coração da experiência "estilo Uber":
