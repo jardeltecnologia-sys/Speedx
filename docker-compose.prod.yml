@@ -1,0 +1,73 @@
+# =============================================================================
+# SPEEDX - PRODUÇÃO (VPS)
+# =============================================================================
+# Sobe o sistema COMPLETO na VPS: backend + PostgreSQL + Redis.
+# O Nginx do host faz o proxy HTTPS para o backend (porta interna 3010).
+#
+# Uso na VPS (em /opt/speedx):
+#   docker compose -f docker-compose.prod.yml up -d --build
+#
+# Segredos vêm do arquivo .env.prod (NUNCA commitado), na mesma pasta:
+#   POSTGRES_PASSWORD=...   (senha forte do banco)
+# =============================================================================
+
+services:
+
+  backend:
+    build: ./backend
+    container_name: speedx-backend
+    restart: unless-stopped
+    environment:
+      PORT: 3000
+      DB_HOST: postgres            # Nome do serviço = endereço na rede interna
+      DB_PORT: 5432
+      DB_USER: speedx
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_NAME: speedx
+      REDIS_URL: redis://redis:6379
+      CORS_ORIGIN: "*"             # Apertar para o domínio na fase de auth
+    ports:
+      # Só o Nginx do host enxerga o backend (127.0.0.1) - nada exposto direto
+      - "127.0.0.1:3010:3000"
+    volumes:
+      # Os apps web são servidos pelo próprio backend (server.js usa ../apps)
+      - ./apps:/apps:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: speedx-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: speedx
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: speedx
+    volumes:
+      - speedx_pg_data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U speedx -d speedx"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: speedx-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - speedx_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  speedx_pg_data:
+  speedx_redis_data:
